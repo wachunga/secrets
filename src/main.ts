@@ -1,8 +1,10 @@
 import { Boot } from "./scenes/Boot";
-import { Game as MainGame } from "./scenes/Game";
+import { TopDown } from "./scenes/TopDown";
+import { Preloader } from "./scenes/Preloader";
 import { GameOver } from "./scenes/GameOver";
 import { MainMenu } from "./scenes/MainMenu";
-import { Preloader } from "./scenes/Preloader";
+import { TextAdventure } from "./scenes/TextAdventure";
+import { InfiniteRunner } from "./scenes/InfiniteRunner";
 
 import { Game, Types } from "phaser";
 
@@ -13,11 +15,28 @@ const config: Types.Core.GameConfig = {
   height: 768,
   parent: "game-container",
   backgroundColor: "#028af8",
+  pixelArt: true,
+  roundPixels: false,
   scale: {
-    mode: Phaser.Scale.FIT,
+    // mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [Boot, Preloader, MainMenu, MainGame, GameOver],
+  scene: [
+    Boot,
+    Preloader,
+    MainMenu,
+    TopDown,
+    TextAdventure,
+    GameOver,
+    InfiniteRunner,
+  ],
+  physics: {
+    default: "arcade",
+    arcade: {
+      gravity: { x: 0, y: 0 },
+      debug: true,
+    },
+  },
 };
 
 export default new Game(config);

@@ -13,6 +13,9 @@ export class Boot extends Scene {
   }
 
   create() {
+    //  A global value to store the secret count in
+    this.registry.set("secrets", 0);
+
     this.scene.start("Preloader");
   }
 }

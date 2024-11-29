@@ -1,0 +1,100 @@
+{
+    "frames": [
+        {
+            "filename": "stand",
+            "frame": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "sprite1",
+            "frame": { "x": 21, "y": 0, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "hurt",
+            "frame": { "x": 42, "y": 0, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "jump",
+            "frame": { "x": 63, "y": 0, "w": 23, "h": 22 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 23, "h": 22 },
+            "sourceSize": { "w": 23, "h": 22 }
+        },
+        {
+            "filename": "walk1",
+            "frame": { "x": 63, "y": 23, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "walk3",
+            "frame": { "x": 0, "y": 24, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "walk2",
+            "frame": { "x": 21, "y": 24, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "walk4",
+            "frame": { "x": 42, "y": 24, "w": 20, "h": 23 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 23 },
+            "sourceSize": { "w": 20, "h": 23 }
+        },
+        {
+            "filename": "duck",
+            "frame": { "x": 63, "y": 47, "w": 20, "h": 21 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 20, "h": 21 },
+            "sourceSize": { "w": 20, "h": 21 }
+        },
+        {
+            "filename": "swim1",
+            "frame": { "x": 0, "y": 48, "w": 23, "h": 20 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 23, "h": 20 },
+            "sourceSize": { "w": 23, "h": 20 }
+        },
+        {
+            "filename": "swim2",
+            "frame": { "x": 24, "y": 48, "w": 26, "h": 16 },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": { "x": 0, "y": 0, "w": 26, "h": 16 },
+            "sourceSize": { "w": 26, "h": 16 }
+        }
+    ],
+    "meta": {
+        "app": "https://www.leshylabs.com/apps/sstool/",
+        "version": "Leshy SpriteSheet Tool v0.8.4",
+        "image": "spritesheet.png",
+        "size": { "w": 86, "h": 68 },
+        "scale": 1
+    }
+}
+
