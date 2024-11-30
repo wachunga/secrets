@@ -47,7 +47,7 @@ export class TextAdventure extends Phaser.Scene {
     this.prompt = this.add.text(
       margin,
       this.scale.height - margin - 50,
-      "Type a command or HELP if you're not sure",
+      "— Press Enter to continue —",
       {
         font: monospace,
         color: "#ffffff",
@@ -83,14 +83,16 @@ export class TextAdventure extends Phaser.Scene {
 
     if (!this.introSeen) {
       this.pressEnterKey = true;
+      this.updateTextDisplays();
       this.updateStoryText(
-        `<p>As you transform into a ${highlight('rat')}, your sight ${weak('weakens')} but your smell and hearing are ${strong('enhanced')}.</p>
-  <p>— Press Enter to continue —</p>`
+        `<p>As you transform into a ${highlight('rat')}, your sight ${weak('weakens')} but your smell and hearing are ${strong('enhanced')}.</p>`
       );
       this.introSeen = true;
     } else {
-      this.acceptUserInput();
+      this.updateTextDisplays();
     }
+
+    this.startCursor();
 
     this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
       if (this.pressEnterKey) {
@@ -101,7 +103,7 @@ export class TextAdventure extends Phaser.Scene {
             nextLocation = "1-entrance"; // TODO: from data
           }
           this.currentScene = nextLocation;
-          this.acceptUserInput();
+          this.updateTextDisplays();
         }
       } else {
         this.handleKeyInput(event)
@@ -109,18 +111,14 @@ export class TextAdventure extends Phaser.Scene {
     });
   }
 
-  private acceptUserInput() {
-    this.startCursor();
-    this.inputTextArrow.setVisible(true)
-    this.updateTextDisplays();
-  }
-
   private updateStoryText(text: string) {
     let html = text;
     if (this.currentScene !== "start") {
       const connections = this.getLocation(this.currentScene).connections || {}
       const directions = Object.keys(connections).map((dir) => colored(dir.toUpperCase(), "primary")).join(", ")
-      html = `${text}<br><br>You can go: ${directions}`
+      if (directions.length) {
+        html += `<br><br>You can go: ${directions}`
+      }
     }
 
     this.storyText.createFromHTML(html).setClassName("story-text")
@@ -199,7 +197,7 @@ export class TextAdventure extends Phaser.Scene {
     }
 
     const currentSceneData = this.getLocation(this.currentScene);
-    const connections = currentSceneData.connections || {};
+    const connections = { ...currentSceneData.connections, ...currentSceneData.hiddenConnections };
     const commands = currentSceneData.commands || {};
     const commandKey = input.toLowerCase();
     if (commandKey in connections) {
@@ -215,7 +213,6 @@ export class TextAdventure extends Phaser.Scene {
         nextLocation.effects.call(this);
       }
 
-      // Update all text displays
       this.updateTextDisplays();
     } else if (commandKey in commands) {
       this.updateHistory(originalInput, commands[commandKey]);
@@ -244,6 +241,15 @@ export class TextAdventure extends Phaser.Scene {
     const scene = this.getLocation(this.currentScene);
     this.updateStoryText(`${scene.description}\n\n`);
     this.historyText.setText(this.history.join("\n"));
+
+    if (scene.pressEnterKey) {
+      this.pressEnterKey = true;
+      this.prompt.setVisible(true);
+      this.inputTextArrow.setVisible(false)
+    } else {
+      this.prompt.setVisible(false);
+      this.inputTextArrow.setVisible(true)
+    }
   }
 
   // Visual Effects (for reference)

@@ -3,6 +3,7 @@ export type Location = {
   id: LocationKey;
   description: string;
   connections?: { [key: string]: LocationKey }; // directions you can go from this location
+  hiddenConnections?: { [key: string]: LocationKey }; // same as above but not obvious in the UI
   commands?: { [key: string]: string }; // extra commands you can type (other than directions)
   effects?: () => void;
   coordinates?: { x: number; y: number };
@@ -46,15 +47,14 @@ export const keys = {
   '1-secret-tunnel': true,
   '1-secret-room': true,
   '1-spike-room': true,
+  '1-spike-room-squeeze': true,
   '1-spike-room-beyond': true,
+  '1-spike-room-return': true,
   '1-rubble': true,
 }
 
 // ideas:
 //   description: "You hear faint water dripping. It echoes in the tunnels.",
-// "You hear faint squeaks in the distance.",
-//     "The cheese smells enticing, but there's a faint metallic scent as well.",
-//     "A predator might be nearby.",
 //   "The sound grows louder as you strain your ears.",
 //   "You sense vibrations in the ground from the north.",
 
@@ -86,6 +86,16 @@ To the south, the smells of the jungle waft down the stairs.`,
     connections: { south: "1-entrance", west: '1-west-hallway', north: '1-rubble' },
   },
   {
+    id: "1-rubble",
+    description:
+      "The path is blocked by a pile of rubble. You can see a faint light to the north.",
+    connections: { south: "1-hallway" },
+    commands: {
+      "look": "Your instincts tell you there's no way you'll be able to get over or through this rubble in your current form.",
+      "jump": "The rubble goes all the way to the ceiling.",
+    }
+  },
+  {
     id: "1-west-hallway",
     description:
       "You scurry forward. The air smells damp and earthy. You hear nothing but silence to the west but faint echoes to the north.",
@@ -95,34 +105,52 @@ To the south, the smells of the jungle waft down the stairs.`,
     id: '1-spike-room',
     description:
       `You sense danger. The room ahead smells strongly of metal.
-You cautiously scurry forward and find enormous spikes jutting out of the floor.`,
+You cautiously scurry forward and find enormous ${strong('spikes')} jutting out of the floor.`,
     connections: { south: '1-west-hallway' },
+    hiddenConnections: { squeeze: '1-spike-room-squeeze' },
     commands: {
       "look": "The metal spikes are everywhere, but you think you could squeeze between them.",
-      "look spikes": "The metal spikes are everywhere, but you think you could squeeze between them.",
-      "squeeze": "You slowly navigate among the spikes. You nick your tail slightly but manage to make it to the other side.",
+      // FIXME: the strong doesn't show up because it's not DOM
+      "look spikes": `The metal spikes are everywhere, but you think you could ${strong('squeeze')} between them.`,
       "squeeze between": "You slowly navigate among the spikes. You nick your tail slightly but manage to make it to the other side.",
       "jump": "That seems like a terrible idea. You can't even see where the spikes end.",
     },
+  },
+  {
+    id: "1-spike-room-squeeze",
+    description:
+      `You slowly navigate among the spikes. You nick your tail slightly but manage to make it to the other side.`,
+    pressEnterKey: '1-spike-room-beyond',
+  },
+  {
+    id: "1-spike-room-beyond",
+    description:
+      `TODO: Secret as a human! Help me, Anna!`,
+    connections: { back: '1-spike-room-return' },
+  },
+  {
+    id: '1-spike-room-return',
+    description:
+      `You bypass the spikes easily this time. You feel more comfortable than ever as a rat.`,
+    connections: { south: '1-west-hallway' },
   },
   {
     id: "1-dead-end",
     description:
       `You have a good feeling as the tunnel curves, but then you nearly run into a wall. The path is blocked.
 Or is it? Your whiskers twitch as you detect a small gap in the base of the wall.`,
-    connections: { hole: '1-secret-tunnel', north: '1-west-hallway' },
+    connections: { gap: '1-secret-tunnel', north: '1-west-hallway' },
   },
   {
     id: "1-secret-tunnel",
     description:
-      `You scurry through the gap and discover a winding tunnel. You eventually find yourself in a small room.`,
+      `You scurry through the gap and discover a narrow earthen tunnel. Following it eventually leads to a small room.`,
     pressEnterKey: '1-secret-room',
   },
   {
     id: "1-secret-room",
     description:
-      `You scurry through the crack and follow a winding tunnel. You eventually find yourself in a small room.
-The air is stale, and you sense that few people have ever visited this place. At the center of the room is a large wooden object.`,
+      `The air here is stale, and you sense that few people have ever visited this place. At the center of the room is a large wooden object.`,
     connections: { tunnel: '1-west-hallway' },
     commands: {
       "look": "You see a large wooden object. Smells like oak. Your limited eyesight makes it tough to see the details.",
@@ -130,6 +158,7 @@ The air is stale, and you sense that few people have ever visited this place. At
       "look wooden object": "You see a large wooden object. Smells like oak. Your limited eyesight makes it tough to see the details.",
       "look tunnel": "It's where you came from.",
       "take": "It's too heavy.",
+      "get": "It's too heavy.",
     },
     coordinates: { x: 184 - 8, y: 200 - 8 },
   },
