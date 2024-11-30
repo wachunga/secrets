@@ -21,6 +21,7 @@ export class TopDown extends Scene {
   rt: Phaser.GameObjects.RenderTexture;
   eventsLayer: Phaser.Tilemaps.ObjectLayer;
   collisionLayer: Phaser.Tilemaps.TilemapLayer;
+  objectLayer: Phaser.Tilemaps.TilemapLayer;
 
   constructor() {
     super("TopDown");
@@ -28,12 +29,13 @@ export class TopDown extends Scene {
 
   create(data: any): void {
     this.camera = this.cameras.main;
-    this.camera.setBackgroundColor(0x000000);
+    this.camera.setBackgroundColor(0x222222); // match tileset darkness
     this.camera.setZoom(2);
 
     // this.player = this.add.rectangle(16 * 15, 16 * 15, 16, 16, 0xff0000);
     const x = data.coordinates?.x || 240;
     const y = data.coordinates?.y || 288;
+
     this.player = this.physics.add.image(
       x + TILE_SIZE / 2,
       y + TILE_SIZE / 2,
@@ -53,7 +55,10 @@ export class TopDown extends Scene {
       // 2
     )!;
     map.createLayer("floor", tilesetImage);
-    map.createLayer("objects", tilesetImage);
+    this.objectLayer = map
+      .createLayer("objects", tilesetImage)
+      ?.setCollisionByProperty({ collide: true })!;
+    map.createLayer("rubble", tilesetImage);
     this.eventsLayer = map.getObjectLayer("events")!;
 
     this.camera.startFollow(this.player, true);
@@ -72,9 +77,7 @@ export class TopDown extends Scene {
 
     this.player.depth = 1; // appear on top of the tileset
 
-    // const score = this.registry.get('highscore');
-    // const textStyle = { fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff', stroke: '#000000', strokeThickness: 8 };
-
+    // TODO? const score = this.registry.get('highscore');
     this.cursors = this.input.keyboard!.createCursorKeys();
 
     // fog around player
@@ -115,7 +118,7 @@ export class TopDown extends Scene {
     // if (Phaser.Input.Keyboard.JustDown(space)) {
     //   this.checkSpaceEvent();
     // }
-    if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey('SPACE'))) {
+    if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey("SPACE"))) {
       this.sound.play("sfx-transform", { seek: 0.3 });
       this.scene.start("TextAdventure");
     }
@@ -127,9 +130,10 @@ export class TopDown extends Scene {
 
     // Calculate the target tile
     const targetTile = this.collisionLayer.getTileAtWorldXY(targetX, targetY);
+    const targetTile2 = this.objectLayer.getTileAtWorldXY(targetX, targetY);
 
     // Check for collision
-    if (targetTile && targetTile.properties.collide) {
+    if (targetTile?.properties.collide || targetTile2?.properties.collide) {
       return; // Block movement if the tile collides
     }
 
@@ -139,7 +143,7 @@ export class TopDown extends Scene {
 
   movePlayer(targetX: number, targetY: number): void {
     isMoving = true;
-    this.sound.play('sfx-walk', { volume: 0.2 });
+    this.sound.play("sfx-walk", { volume: 0.2 });
 
     this.tweens.add({
       targets: this.player,
@@ -172,7 +176,7 @@ export class TopDown extends Scene {
           object.width || TILE_SIZE,
           object.height || TILE_SIZE
         );
-        const hasTrigger = object.properties.find(
+        const hasTrigger = object.properties?.find(
           (p: any) => p.name === "trigger"
         );
         if (!hasTrigger) return;

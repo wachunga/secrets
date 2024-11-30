@@ -28,7 +28,7 @@ export class Preloader extends Scene {
     // human form
     this.load.image("floor-tiles", "tiles/atlas_floor-16x16.png");
     this.load.image("wall-tiles", "tiles/atlas_walls_low-16x16.png");
-    this.load.tilemapTiledJSON("tilemap", "tiles/secrets2.json");
+    this.load.tilemapTiledJSON("tilemap", "tiles/secrets3.json");
 
     // infinte runner
     // this.load.image(
@@ -44,11 +44,12 @@ export class Preloader extends Scene {
     this.load.image("urchin", "infinite/urchin.png");
 
     // credit: alkakrab ("10 Ambient RPG Tracks")
-    this.load.audio('bg-main', "audio/distant-echoes.mp3");
+    // this.load.audio('bg-main', "audio/distant-echoes.mp3");
+    // credit: rpg maker
+    this.load.audio("bg-main", "audio/lonely-departure.m4a");
     // credit: "Minifantasy_Dungeon_SFX"
-    this.load.audio('sfx-transform', "audio/transform.wav");
-    this.load.audio('sfx-walk', "audio/walk.wav");
-
+    this.load.audio("sfx-transform", "audio/transform.wav");
+    this.load.audio("sfx-walk", "audio/walk.wav");
   }
 
   create() {
@@ -57,7 +58,7 @@ export class Preloader extends Scene {
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.sound.play("bg-main", { loop: true, volume: 0.2 });
-    this.scene.start("TextAdventure");
+    this.scene.start("TopDown");
     //   this.scene.transition({
     //     target: "InfiniteRunner",
     //     duration: 1000,
