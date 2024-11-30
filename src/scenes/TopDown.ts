@@ -63,12 +63,12 @@ export class TopDown extends Scene {
     this.collisionLayer = map.createLayer("walls", tilesetImage2)!;
     this.collisionLayer.setCollisionByProperty({ collide: true });
 
-    const debugGraphics = this.add.graphics().setAlpha(0.3);
-    this.collisionLayer.renderDebug(debugGraphics, {
-      tileColor: null,
-      collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
-      faceColor: new Phaser.Display.Color(40, 39, 37, 255),
-    });
+    // const debugGraphics = this.add.graphics().setAlpha(0.3);
+    // this.collisionLayer.renderDebug(debugGraphics, {
+    //   tileColor: null,
+    //   collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
+    //   faceColor: new Phaser.Display.Color(40, 39, 37, 255),
+    // });
 
     this.player.depth = 1; // appear on top of the tileset
 
@@ -116,7 +116,7 @@ export class TopDown extends Scene {
     //   this.checkSpaceEvent();
     // }
     if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey('SPACE'))) {
-      // TODO: sound effect
+      this.sound.play("sfx-transform", { seek: 0.3 });
       this.scene.start("TextAdventure");
     }
   }
@@ -139,6 +139,7 @@ export class TopDown extends Scene {
 
   movePlayer(targetX: number, targetY: number): void {
     isMoving = true;
+    this.sound.play('sfx-walk', { volume: 0.2 });
 
     this.tweens.add({
       targets: this.player,

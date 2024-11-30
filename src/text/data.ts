@@ -70,6 +70,9 @@ export const locations: Location[] = [
 To the south, the smells of the jungle waft down the stairs.`,
     connections: { north: "1-hallway", south: '1-stairs-up' },
     coordinates: { x: 248 - 8, y: 232 - 8 },
+    commands: {
+      "look stairs": "The stairs are ancient... and way too steep for a rat to comfortably climb.",
+    }
   },
   {
     id: "1-stairs-up",

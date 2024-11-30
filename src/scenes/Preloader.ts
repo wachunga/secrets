@@ -43,7 +43,11 @@ export class Preloader extends Scene {
     );
     this.load.image("urchin", "infinite/urchin.png");
 
+    // credit: alkakrab ("10 Ambient RPG Tracks")
     this.load.audio('bg-main', "audio/distant-echoes.mp3");
+    // credit: "Minifantasy_Dungeon_SFX"
+    this.load.audio('sfx-transform', "audio/transform.wav");
+    this.load.audio('sfx-walk', "audio/walk.wav");
 
   }
 

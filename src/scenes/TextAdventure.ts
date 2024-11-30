@@ -220,8 +220,10 @@ export class TextAdventure extends Phaser.Scene {
     } else if (commandKey in commands) {
       this.updateHistory(originalInput, commands[commandKey]);
     } else if (commandKey === 'transform') {
-      // TODO: play sound effect
+      this.sound.play("sfx-transform", { seek: 0.3 });
       this.scene.start("TopDown", { coordinates: currentSceneData.coordinates });
+    } else if (commandKey === 'look') {
+      this.updateHistory(originalInput, "You don't see anything remarkable.");
     } else {
       this.updateHistory(originalInput, "You hesitate, unsure of what to do. Try something else.");
     }
