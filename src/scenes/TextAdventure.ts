@@ -1,226 +1,265 @@
 import Phaser from "phaser";
+import { colored, highlight, locations, strong, weak, type LocationKey } from "../text/data";
 
-const margin = 50;
+const margin = 100;
+const monospace = "20px monospace";
 
 export class TextAdventure extends Phaser.Scene {
   private background!: Phaser.GameObjects.Graphics;
-  private storyText!: Phaser.GameObjects.Text;
+  private storyText!: Phaser.GameObjects.DOMElement;
+  private prompt!: Phaser.GameObjects.Text;
+  private inputTextArrow!: Phaser.GameObjects.Text;
   private inputText!: Phaser.GameObjects.Text;
+  private cursor!: Phaser.GameObjects.Text;
   private historyText!: Phaser.GameObjects.Text;
+
   private playerInput: string = "";
-  private currentScene: string = "";
+  private currentScene: LocationKey = "start";
   private history: string[] = [];
   private introSeen = false;
-
-  private locations: {
-    id: string;
-    description: string;
-    connections: { [key: string]: string };
-    effects?: () => void;
-  }[] = [
-    {
-      id: "1-entrance",
-      description: `The area around you is vast. A cold draft tickles your fur from the north.
-From the south, you smell the jungle.`,
-      // ideas:
-      // "You awaken in a cramped, dark space. Your whiskers brush against cold stone walls.",
-      // "The air smells damp and earthy.",
-      // "You hear faint squeaks in the distance.",
-      //     "The cheese smells enticing, but there's a faint metallic scent as well.",
-      //     "A predator might be nearby.",
-      //   "The sound grows louder as you strain your ears.",
-      //   "You sense vibrations in the ground from the north.",
-      // actions: { north: 3 },
-      connections: { north: "1-hallway" },
-      effects: () => this.fadeBackground("#ffcc00", 2000),
-    },
-    {
-      id: "1-hallway",
-      description:
-        "You sniff the air and detect the sharp tang of cheese to the east.",
-      // actions: { crawl: 4, retreat: 0 },
-      connections: { south: "1-entrance" },
-      effects: () => this.flashScreen("#555555", 1000),
-    },
-    // {
-    //   description: "You hear faint water dripping. It echoes in the tunnels.",
-    //   actions: { explore: 5, retreat: 0 },
-    //   effects: () => this.pulseBackground("#3366cc", 500),
-    // },
-    // {
-    //   description:
-    //     "Your whiskers brush again cold stone walls. The path is straight and soon a decision can be made.",
-    //   actions: { west: 5, north: 0 },
-    //   effects: () => this.pulseBackground("#3366cc", 500),
-    // },
-  ];
+  private pressEnterKey = false;
 
   constructor() {
     super({ key: "TextAdventure" });
   }
 
-  preload() {}
+  preload() { }
 
-  create() {
+  update() {
+    if (this.pressEnterKey) {
+      this.cursor.setVisible(false);
+      return;
+    }
+
+    this.cursor?.setX(this.inputText.getBottomRight().x - 4)
+  }
+
+  create(data: any) {
     this.background = this.add
       .graphics()
       .fillStyle(0x000000, 1)
-      .fillRect(0, 0, 800, 600);
+      .fillRect(0, 0, this.scale.width, this.scale.height)
+      .lineStyle(4, 0xFFFFFF, 1) // add a stroke around the rectangle
+      .strokeRect(0, 0, this.scale.width, this.scale.height);
 
-    this.storyText = this.add.text(margin, margin, "", {
-      font: "20px Arial",
-      color: "#ffffff",
-      wordWrap: { width: 700 },
-    });
+    this.storyText = this.add.dom(margin, margin, "div").setOrigin(0, 0);
 
-    if (this.introSeen) {
-      // jump straight to scene
-      this.updateTextDisplays();
-    } else {
-      this.showIntroText();
-    }
-
-    // Display input prompt
-    const prompt = this.add.text(
+    this.prompt = this.add.text(
       margin,
-      500,
-      "Type your action (e.g., sniff, listen, north) and press Enter:",
+      this.scale.height - margin - 50,
+      "Type a command or HELP if you're not sure",
       {
-        font: "18px Arial",
+        font: monospace,
         color: "#ffffff",
       }
-    );
+    ).setVisible(false);
 
-    // Display input text
-    this.inputText = this.add.text(margin, 550, "", {
-      font: "18px Arial",
-      color: "#00ff00",
-    });
+    this.inputTextArrow = this.add.text(this.prompt.getBottomLeft().x, this.prompt.getBottomRight().y, ">", {
+      font: monospace,
+      color: "#ffffff",
+    }).setVisible(false)
+    this.inputText = this.add.text(this.inputTextArrow.getTopRight().x + 6, this.inputTextArrow.getTopRight().y, "", {
+      font: monospace,
+      color: "#ffffff",
+    })
 
-    // Display history
-    this.historyText = this.add.text(margin, 250, "", {
-      font: "16px Arial",
+    this.history = [];
+    this.historyText = this.add.text(margin, 300, "", {
+      font: "18px monospace",
       color: "#aaaaaa",
       wordWrap: { width: 700 },
       lineSpacing: 4,
     });
 
-    this.input.keyboard!.on("keydown", (event: KeyboardEvent) =>
-      this.handleKeyInput(event)
-    );
+    this.cursor = this.add.text(
+      this.inputTextArrow.getTopRight().x + 2,
+      this.inputTextArrow.getTopRight().y - 2,
+      "|",
+      {
+        font: monospace,
+        color: "#ffffff",
+      }
+    ).setVisible(false);
+
+    if (!this.introSeen) {
+      this.pressEnterKey = true;
+      this.updateStoryText(
+        `<p>As you transform into a ${highlight('rat')}, your sight ${weak('weakens')} but your smell and hearing are ${strong('enhanced')}.</p>
+  <p>— Press Enter to continue —</p>`
+      );
+      this.introSeen = true;
+    } else {
+      this.acceptUserInput();
+    }
+
+    this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
+      if (this.pressEnterKey) {
+        if (event.key === 'Enter') {
+          this.pressEnterKey = false;
+          let nextLocation = this.getLocation(this.currentScene).pressEnterKey;
+          if (!nextLocation || nextLocation === 'auto') {
+            nextLocation = "1-entrance"; // TODO: from data
+          }
+          this.currentScene = nextLocation;
+          this.acceptUserInput();
+        }
+      } else {
+        this.handleKeyInput(event)
+      }
+    });
   }
 
-  private showIntroText() {
-    this.storyText.setText(
-      `As you transform into a rat, your sight weakens but your smell and hearing are enhanced.
+  private acceptUserInput() {
+    this.startCursor();
+    this.inputTextArrow.setVisible(true)
+    this.updateTextDisplays();
+  }
 
-Press Enter to continue.`
-    );
-    // this.pauseForInput();
+  private updateStoryText(text: string) {
+    let html = text;
+    if (this.currentScene !== "start") {
+      const connections = this.getLocation(this.currentScene).connections || {}
+      const directions = Object.keys(connections).map((dir) => colored(dir.toUpperCase(), "primary")).join(", ")
+      html = `${text}<br><br>You can go: ${directions}`
+    }
+
+    this.storyText.createFromHTML(html).setClassName("story-text")
   }
 
   private startCursor() {
-    const cursor = this.add.text(
-      prompt.getBottomLeft().x,
-      prompt.getBottomCenter().y,
-      "|",
-      {
-        font: "18px Arial",
-        color: "#ffffff",
-      }
-    );
     this.time.addEvent({
       delay: 500,
       loop: true,
       callback: () => {
-        cursor.visible = !cursor.visible;
+        this.cursor.visible = !this.cursor.visible;
       },
     });
   }
 
   private getLocation(id: string) {
-    const current = this.locations.find((l) => l.id === id);
+    const current = locations.find((l) => l.id === id);
     if (!current) throw new Error("no scene found for " + id);
     return current;
   }
 
-  private handleKeyInput(event: KeyboardEvent) {
-    if (this.introSeen === false && event.key === "Enter") {
-      this.introSeen = true;
-      this.currentScene = "1-entrance";
-      return;
+  private normalizeInput(input: string) {
+    const split = input.toUpperCase().trim().split(' ');
+    const command = split[0];
+    const subject = split.slice(1).join(' ');
+    switch (command) {
+      case "":
+      case "H":
+      case "?":
+      case "HELP":
+        return "HELP";
+      case "L":
+      case "LOOK":
+      case "EXAMINE":
+        if (subject) return `LOOK ${subject}`;
+        return "LOOK";
+      case "TRANSFORM":
+      case "HUMAN":
+      case "REVERT":
+        return "TRANSFORM";
+      case "N":
+      case "NORTH":
+        return "NORTH";
+      case "S":
+      case "SOUTH":
+        return "SOUTH";
+      case "E":
+      case "EAST":
+        return "EAST";
+      case "W":
+      case "WEST":
+        return "WEST";
     }
 
+    return command;
+  }
+
+  private handleKeyInput(event: KeyboardEvent) {
     if (event.key === "Enter") {
-      this.processInput(this.playerInput.toLowerCase().trim());
+      this.processInput(this.playerInput);
       this.playerInput = "";
     } else if (event.key === "Backspace") {
       this.playerInput = this.playerInput.slice(0, -1);
     } else if (event.key.length === 1) {
-      this.playerInput += event.key;
+      this.playerInput += event.key.toUpperCase();
     }
 
-    // Update input text
-    this.inputText.setText(this.playerInput);
+    this.inputText.setText(this.playerInput.toUpperCase());
   }
 
-  private processInput(input: string) {
+  private processInput(originalInput: string) {
+    const input = this.normalizeInput(originalInput);
+    if (input === "HELP") {
+      this.updateHistory('HELP', "Type a command to interact with the world.\nFor example, 'NORTH', 'LOOK', or 'TRANSFORM'.");
+      return;
+    }
+
     const currentSceneData = this.getLocation(this.currentScene);
-
-    if (input in currentSceneData.connections) {
-      const nextSceneId = currentSceneData.connections[input];
-
-      // Log the player's action and the scene's response
-      this.history.push(`> ${input}`);
+    const connections = currentSceneData.connections || {};
+    const commands = currentSceneData.commands || {};
+    const commandKey = input.toLowerCase();
+    if (commandKey in connections) {
+      const nextSceneId = connections[commandKey];
       const nextLocation = this.getLocation(nextSceneId);
-      this.history.push(nextLocation.description);
-
-      // Update the current scene
       this.currentScene = nextSceneId;
+      this.history = [];
 
       // Play scene effects
       if (nextLocation.effects) {
+        // FIXME
         console.log("effecting!", nextLocation.effects);
         nextLocation.effects.call(this);
       }
 
       // Update all text displays
       this.updateTextDisplays();
+    } else if (commandKey in commands) {
+      this.updateHistory(originalInput, commands[commandKey]);
+    } else if (commandKey === 'transform') {
+      // TODO: play sound effect
+      this.scene.start("TopDown", { coordinates: currentSceneData.coordinates });
     } else {
-      this.history.push(`> ${input}`);
-      this.history.push(
-        "You hesitate, unsure of what to do. Try something else."
-      );
-      this.updateTextDisplays();
+      this.updateHistory(originalInput, "You hesitate, unsure of what to do. Try something else.");
     }
   }
 
-  private updateTextDisplays() {
-    // Update the main story text
-    this.storyText.setText(this.getCurrentSceneText());
+  // Log the player's action and the scene's response
+  private updateHistory(command: string, response: string) {
+    this.history.push("> " + command);
+    this.history.push(response);
+    if (this.history.length > 6) {
+      this.history.shift();
+      this.history.shift();
+    }
+    this.updateTextDisplays();
+  }
 
-    // Update the history text
+  private updateTextDisplays() {
+    const scene = this.getLocation(this.currentScene);
+    this.updateStoryText(`${scene.description}\n\n`);
     this.historyText.setText(this.history.join("\n"));
   }
 
-  private getCurrentSceneText(): string {
-    const scene = this.getLocation(this.currentScene);
-    return `${scene.description}\n\n`;
-  }
-
   // Visual Effects (for reference)
-  private flashScreen(color: string, duration: number) {
+  private flashScreen(color: string = "#999999", duration: number = 200) {
     const flash = this.add.rectangle(
       0,
       0,
-      800,
-      600,
+      this.scale.width,
+      this.scale.height,
       Phaser.Display.Color.HexStringToColor(color).color
     );
+    flash.setOrigin(0, 0);
+
     this.tweens.add({
       targets: flash,
-      alpha: { from: 0, to: 0.5 },
+      alpha: { from: 0, to: 0.2 },
       duration: duration,
+      ease: "Sine.easeInOut",
       onComplete: () => flash.destroy(),
     });
   }

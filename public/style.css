@@ -13,3 +13,23 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+
+.story-text {
+    font-family: monospace;
+    /* border: 1px solid white; */
+    font-size: 20px;
+    color: white;
+    word-wrap: break-word;
+    width: 700px;
+    line-height: 1.4;
+}
+
+.story-text p {
+    margin: 0;
+    padding: 0;
+}
+
+.story-text p+p {
+    margin-top: 16px;
+}

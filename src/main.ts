@@ -14,12 +14,15 @@ const config: Types.Core.GameConfig = {
   width: 1024,
   height: 768,
   parent: "game-container",
-  backgroundColor: "#028af8",
+  backgroundColor: "#000000",
   pixelArt: true,
   roundPixels: false,
   scale: {
     // mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  dom: {
+    createContainer: true
   },
   scene: [
     Boot,

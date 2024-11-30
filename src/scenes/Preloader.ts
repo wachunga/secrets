@@ -6,9 +6,6 @@ export class Preloader extends Scene {
   }
 
   init() {
-    //  We loaded this image in our Boot Scene, so we can display it here
-    this.add.image(512, 384, "background");
-
     //  A simple progress bar. This is the outline of the bar.
     this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
     //  This is the progress bar itself. It will increase in size from the left based on the % of progress.
@@ -45,6 +42,9 @@ export class Preloader extends Scene {
       "infinite/penguin-map.json"
     );
     this.load.image("urchin", "infinite/urchin.png");
+
+    this.load.audio('bg-main', "audio/distant-echoes.mp3");
+
   }
 
   create() {
@@ -52,7 +52,8 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start("MainMenu");
+    this.sound.play("bg-main", { loop: true, volume: 0.2 });
+    this.scene.start("TextAdventure");
     //   this.scene.transition({
     //     target: "InfiniteRunner",
     //     duration: 1000,

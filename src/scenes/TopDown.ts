@@ -26,15 +26,17 @@ export class TopDown extends Scene {
     super("TopDown");
   }
 
-  create() {
+  create(data: any): void {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0x000000);
     this.camera.setZoom(2);
 
     // this.player = this.add.rectangle(16 * 15, 16 * 15, 16, 16, 0xff0000);
+    const x = data.coordinates?.x || 240;
+    const y = data.coordinates?.y || 288;
     this.player = this.physics.add.image(
-      240 + TILE_SIZE / 2,
-      288 + TILE_SIZE / 2,
+      x + TILE_SIZE / 2,
+      y + TILE_SIZE / 2,
       "non-existing-image-for-testing"
     );
     this.player.setDisplaySize(12, 12);
@@ -113,6 +115,10 @@ export class TopDown extends Scene {
     // if (Phaser.Input.Keyboard.JustDown(space)) {
     //   this.checkSpaceEvent();
     // }
+    if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey('SPACE'))) {
+      // TODO: sound effect
+      this.scene.start("TextAdventure");
+    }
   }
 
   attemptMove(dx: number, dy: number): void {
