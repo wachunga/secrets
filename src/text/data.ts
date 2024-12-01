@@ -27,7 +27,7 @@ export const keys = {
   "1-spike-room-squeeze": true,
   "1-spike-room-beyond": true,
   "1-spike-room-return": true,
-  "1-rubble": true,
+  "1-rubble-room": true,
 };
 
 // ideas:
@@ -69,23 +69,24 @@ The smells of the jungle waft down from a hole in the ceiling where you entered 
     connections: {
       south: "1-entrance",
       west: "1-west-hallway",
-      north: "1-rubble",
+      north: "1-rubble-room",
     },
   },
   {
-    id: "1-rubble",
+    id: "1-rubble-room",
     originTiles: {
       x: [16, 17, 18],
       y: [4, 5, 6],
     },
-    destinationTile: { x: 18, y: 5 },
+    destinationTile: { x: 18, y: 1 },
     description:
-      "The path is blocked by a pile of rubble. You can see a faint light to the north.",
+      // "The path is blocked by a pile of rubble. You can see a faint light to the north.",
+      "This room appears empty except for a skull in the corner.",
     connections: { south: "1-hallway" },
-    commands: {
-      look: "Your instincts tell you there's no way you'll be able to get over or through this rubble in your current form.",
-      jump: "The rubble goes all the way to the ceiling.",
-    },
+    // commands: {
+    //   look: "Your instincts tell you there's no way you'll be able to get over or through this rubble in your current form.",
+    //   jump: "The rubble goes all the way to the ceiling.",
+    // },
   },
   {
     id: "1-west-hallway",
@@ -116,11 +117,13 @@ You cautiously scurry forward and find enormous ${strong(
     connections: { south: "1-west-hallway" },
     hiddenConnections: { squeeze: "1-spike-room-squeeze" },
     commands: {
-      look: "The metal spikes are everywhere, but you think you could squeeze between them.",
-      // FIXME: the strong doesn't show up because it's not DOM
-      "look spikes": `The metal spikes are everywhere, but you think you could ${strong(
+      spikes: `What about them? Try 'HELP' if you're stuck.`,
+      look: `The metal spikes are everywhere, but you think you could ${strong(
         "squeeze"
       )} between them.`,
+      "look spikes": `They're very sharp, but maybe you could ${strong(
+        "squeeze"
+      )} between them?`,
       "squeeze between":
         "You slowly navigate among the spikes. You nick your tail slightly but manage to make it to the other side.",
       jump: "That seems like a terrible idea. You can't even see where the spikes end.",

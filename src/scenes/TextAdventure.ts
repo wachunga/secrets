@@ -8,11 +8,11 @@ const monospace = "20px monospace";
 export class TextAdventure extends Phaser.Scene {
   private background!: Phaser.GameObjects.Graphics;
   private storyText!: Phaser.GameObjects.DOMElement;
+  private historyText!: Phaser.GameObjects.DOMElement;
   private prompt!: Phaser.GameObjects.Text;
   private inputTextArrow!: Phaser.GameObjects.Text;
   private inputText!: Phaser.GameObjects.Text;
   private cursor!: Phaser.GameObjects.Text;
-  private historyText!: Phaser.GameObjects.Text;
 
   private playerInput: string = "";
   private currentScene: LocationKey = "start";
@@ -79,12 +79,17 @@ export class TextAdventure extends Phaser.Scene {
     );
 
     this.history = [];
-    this.historyText = this.add.text(margin, 300, "", {
-      font: "18px monospace",
-      color: "#aaaaaa",
-      wordWrap: { width: 700 },
-      lineSpacing: 4,
-    });
+    this.historyText = this.add
+      .dom(margin, 300, "div")
+      .setOrigin(0, 0)
+      .setClassName("history-text");
+
+    // this.historyText = this.add.text(margin, 300, "", {
+    //   font: "18px monospace",
+    //   color: "#aaaaaa",
+    //   wordWrap: { width: 700 },
+    //   lineSpacing: 4,
+    // });
 
     this.cursor = this.add
       .text(
@@ -285,7 +290,9 @@ export class TextAdventure extends Phaser.Scene {
   private updateTextDisplays() {
     const location = this.getLocation(this.currentScene);
     this.updateStoryText(`${location.description}\n\n`);
-    this.historyText.setText(this.history.join("\n"));
+    this.historyText
+      .createFromHTML(this.history.join("<br>"))
+      .setClassName("history-text");
 
     if (location.pressEnterKey) {
       this.pressEnterKey = true;

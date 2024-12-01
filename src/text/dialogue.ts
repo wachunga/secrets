@@ -1,6 +1,11 @@
 import { strong } from "./colors";
 
 export const dialogues = {
+  intro: [
+    `A cloaked girl, with the unpredictable ability to transform into a rat, has spent all of her life trying to gain control of her power.`,
+    `Years of research have led her to where she is now, some jungle ruins on a remote island.`,
+    `The secret of magic awaits,<br>but finding it willl not be easy!`,
+  ],
   secret1: [
     "There's an inscription on the floor:",
     `<center>The cycle of life<br>
@@ -34,16 +39,17 @@ to those who seek it</center>`,
   chestScroll2: [`You learn the secret of ${strong("Adaptation")}!`],
   spikePainting: ["Something is painted here..."],
   spikePainting2: [
-    // "This image seems to show you the power of animal instincts.",
-    `You learn the secret of ${strong("animal instincts")}!`,
+    `After studying it for a while...<br><br>You learn the secret of ${strong(
+      "Animal Instincts"
+    )}!`,
   ],
-  rubbleMelody: [
-    "Suddenly a song fills the air.",
-    // play a tune
-    "The melody enlightens you with the secret of inner peace.",
+  rubbleMelody: ["Suddenly a song fills the air..."],
+  rubbleMelody2: [
+    `The beautiful melody teaches you<br>the secret of ${strong(
+      "Inner Peace"
+    )}!`,
   ],
   secretFinal: [
-    "There's a mirror on the wall.",
     // show mirror image
     "The mirror is reflecting your true self, revealing the magic of transformation. It was worth all the time you spent searching, for you have discovered the secret of magic!",
     // rumble screen

@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import { locations } from "../text/data";
 import { dialogues } from "../text/dialogue";
+import { strong } from "../text/colors";
 
 let isMoving = false;
 let displayQueuePaused = false;
@@ -10,8 +11,13 @@ const TILE_SIZE = 16;
 type MoveDirection = "up" | "down" | "left" | "right";
 
 const switches = {
+  introText: false,
   secret1Found: false,
   chestOpened: false,
+  paintingSeen: false,
+  melodyHeard: false,
+  rubbleCleared: false,
+  endingTriggered: false,
 };
 
 const displayQueue: Function[] = [];
@@ -36,8 +42,9 @@ export class TopDown extends Scene {
     this.camera.setBackgroundColor(0x222222); // match tileset darkness
     this.camera.setZoom(3);
 
-    const x = data.coordinates?.x || Math.floor(3 * 16);
-    const y = data.coordinates?.y || Math.floor(17 * 16);
+    // 240, 288
+    const x = data.coordinates?.x || Math.floor(15 * 16);
+    const y = data.coordinates?.y || Math.floor(18 * 16);
 
     this.anims.create({
       key: "up-idle",
@@ -58,8 +65,8 @@ export class TopDown extends Scene {
 
     const frameRate = {
       frameRate: 8,
-      // repeat: -1,
       repeatDelay: 0,
+      // repeat: -1,
     };
     this.anims.create({
       key: "up",
@@ -151,6 +158,11 @@ export class TopDown extends Scene {
       this.player.y - 107 - this.cameras.main.scrollY
     );
 
+    if (!switches.introText) {
+      this.showDialogueBox(dialogues.intro);
+      switches.introText = true;
+    }
+
     if (isMoving) return; // Prevent new input while moving
 
     if (left.isDown) {
@@ -163,7 +175,6 @@ export class TopDown extends Scene {
       this.attemptMove(0, 1, "down");
     }
 
-    // TODO: Check if space bar is pressed while facing a specific tile
     if (Phaser.Input.Keyboard.JustDown(space)) {
       this.checkSpaceEvent();
     }
@@ -175,6 +186,32 @@ export class TopDown extends Scene {
       } else {
         // TODO: show message that you can't transform here
       }
+    }
+
+    // if all secrets have been found, update tileset to remove rubble
+    // console.log("switches", JSON.stringify(switches, null, 2));
+    if (
+      switches.secret1Found &&
+      switches.chestOpened &&
+      switches.paintingSeen &&
+      switches.melodyHeard &&
+      !switches.rubbleCleared
+    ) {
+      this.objectLayer.forEachTile((tile) => {
+        if (tile.properties.collide && tile.properties.rubble) {
+          this.time.delayedCall(1000, () => {
+            displayQueue.push(() => {
+              this.showDialogueBox(["You feel a might rumble..."]);
+            });
+            displayQueue.push(() => {
+              this.cameras.main.shake(500, 0.01);
+              tile.setCollision(false);
+              tile.setVisible(false);
+            });
+          });
+          switches.rubbleCleared = true;
+        }
+      });
     }
   }
 
@@ -197,7 +234,7 @@ export class TopDown extends Scene {
     const targetTile = this.collisionLayer.getTileAtWorldXY(targetX, targetY);
     const targetTile2 = this.objectLayer.getTileAtWorldXY(targetX, targetY);
 
-    if (targetTile?.properties.collide || targetTile2?.properties.collide) {
+    if (targetTile?.canCollide || targetTile2?.canCollide) {
       this.player.play(`${direction}-idle`);
       return; // Block movement if the tile collides
     }
@@ -250,13 +287,39 @@ export class TopDown extends Scene {
     if (tileX === 4 && tileY === 16 && playerDirection?.startsWith("down")) {
       openChest();
     }
+
+    if (tileX === 16 && tileY === 14 && playerDirection?.startsWith("right")) {
+      displayQueue.push(() =>
+        this.showDialogueBox([
+          `There's rubble in the way.<br><br>You're not strong enough to clear a path.`,
+        ])
+      );
+    }
+
+    if (tileX === 18 && tileY === 14 && playerDirection?.startsWith("right")) {
+      displayQueue.push(() => {
+        this.showDialogueBox([`There's no way but down. You jump!`]);
+
+        // teleport the player to the bottom floor
+        this.player.setPosition(31 * 16 + 8, 3 * 16 + 8);
+        this.camera.flash(500);
+      });
+    }
+
+    if (tileX === 12 && tileY === 5 && playerDirection?.startsWith("up")) {
+      displayQueue.push(() =>
+        this.showDialogueBox([
+          `Yikes! There's no way to get over or through<br>these spikes in your current form.`,
+        ])
+      );
+    }
   }
 
   checkTileEvent(): void {
     const tileX = Math.floor(this.player.x / 16);
     const tileY = Math.floor(this.player.y / 16);
 
-    console.log(tileX, tileY);
+    // console.log(tileX, tileY);
     if (tileX === 15 && tileY === 13) {
       if (!switches.secret1Found) {
         displayQueue.push(() => this.showDialogueBox(dialogues.secret1));
@@ -265,13 +328,45 @@ export class TopDown extends Scene {
       }
       switches.secret1Found = true;
     } else if (tileX === 11 && tileY === 1) {
-      displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting));
-      displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting2));
+      if (!switches.paintingSeen) {
+        displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting));
+        displayQueue.push(() => this.showDialogueBox([""], "painting"));
+        displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting2));
+      }
+      switches.paintingSeen = true;
     }
-  }
 
-  addToDisplayQueue(item: () => {}): void {
-    displayQueue.push(item);
+    if (tileX === 18 && tileY === 2) {
+      if (!switches.melodyHeard) {
+        displayQueue.push(() => this.showDialogueBox(dialogues.rubbleMelody));
+        displayQueue.push(() => this.showDialogueBox(dialogues.rubbleMelody2));
+      }
+      switches.melodyHeard = true;
+    }
+
+    if ((tileX === 32 && tileY === 3) || (tileX === 30 && tileY === 3)) {
+      if (!switches.endingTriggered) {
+        displayQueue.push(() =>
+          this.showDialogueBox(["You see a mirror on the wall."])
+        );
+        displayQueue.push(() => this.showDialogueBox([""], "mirror"));
+        displayQueue.push(() => {
+          this.showDialogueBox([
+            `The mirror is reflecting your true self, revealing the magic of transformation.`,
+            `It was worth all the time you spent searching, for you have discovered the ${strong(
+              "Secret of Magic"
+            )}!`,
+          ]);
+
+          // restart the game from the main menu
+          this.cameras.main.fadeOut(3000, 0, 0, 0);
+          this.time.delayedCall(3000, () => {
+            this.scene.start("MainMenu");
+          });
+        });
+      }
+      switches.endingTriggered = true;
+    }
   }
 
   showDialogueBox(text: string[], className?: string): void {

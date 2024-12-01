@@ -19,9 +19,9 @@ body {
     text-align: center;
 }
 
-.dialogue, .story-text {
-    position: relative;
-    display: flex;
+
+
+.dialogue, .story-text, .history-text {
     font-family: monospace;
     /* border: 1px solid white; */
     font-size: 20px;
@@ -31,12 +31,16 @@ body {
     line-height: 1.4;
 }
 
-.dialogue p, .story-text p {
+.history-text {
+    color: #aaa;
+}
+
+.dialogue p, .story-text p, .history-text p {
     margin: 0;
     padding: 0;
 }
 
-.dialogue p, .story-text p+p {
+.dialogue p+p, .story-text p+p, .history-text p+p {
     margin-top: 16px;
 }
 

@@ -27,7 +27,9 @@ export class Preloader extends Scene {
     this.load.image("floor-tiles", "tiles/atlas_floor-16x16.png");
     this.load.image("wall-tiles", "tiles/atlas_walls_low-16x16.png");
     this.load.image("scroll", "secret-adaptation.jpeg");
-    this.load.tilemapTiledJSON("tilemap", "tiles/secrets3.json");
+    this.load.image("painting", "secret-instinct.jpeg");
+    this.load.image("mirror", "secret-mirror3.jpeg");
+    this.load.tilemapTiledJSON("tilemap", "tiles/secrets4.json");
     this.load.spritesheet(
       "human",
       "sprites/girl-16x18.png",
