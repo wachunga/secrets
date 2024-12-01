@@ -5,20 +5,14 @@ let isMoving = false;
 
 const TILE_SIZE = 16;
 
-export const DIRECTION = Object.freeze({
-  LEFT: "LEFT",
-  RIGHT: "RIGHT",
-  UP: "UP",
-  DOWN: "DOWN",
-  NONE: "NONE",
-});
+type MoveDirection = 'up' | 'down' | 'left' | 'right'
 
 export class TopDown extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
   background: Phaser.GameObjects.Image;
   msg_text: Phaser.GameObjects.Text;
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  player: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+  player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   rt: Phaser.GameObjects.RenderTexture;
   eventsLayer: Phaser.Tilemaps.ObjectLayer;
   collisionLayer: Phaser.Tilemaps.TilemapLayer;
@@ -33,18 +27,59 @@ export class TopDown extends Scene {
     this.camera.setBackgroundColor(0x222222); // match tileset darkness
     this.camera.setZoom(2);
 
-    // this.player = this.add.rectangle(16 * 15, 16 * 15, 16, 16, 0xff0000);
     const x = data.coordinates?.x || 240;
     const y = data.coordinates?.y || 288;
 
-    this.player = this.physics.add.image(
-      x + TILE_SIZE / 2,
-      y + TILE_SIZE / 2,
-      "non-existing-image-for-testing"
-    );
-    this.player.setDisplaySize(12, 12);
-    this.player.setTintFill(0xff0000);
+    this.anims.create({
+      key: 'up-idle',
+      frames: this.anims.generateFrameNumbers('human', { frames: [1] }),
+    });
+    this.anims.create({
+      key: 'right-idle',
+      frames: this.anims.generateFrameNumbers('human', { frames: [4] }),
+    });
+    this.anims.create({
+      key: 'down-idle',
+      frames: this.anims.generateFrameNumbers('human', { frames: [7] }),
+    });
+    this.anims.create({
+      key: 'left-idle',
+      frames: this.anims.generateFrameNumbers('human', { frames: [10] }),
+    });
+
+    const frameRate = {
+      frameRate: 8,
+      // repeat: -1,
+      repeatDelay: 0
+    }
+    this.anims.create({
+      key: 'up',
+      frames: this.anims.generateFrameNumbers('human', { start: 0, end: 2 }),
+      ...frameRate,
+    });
+    this.anims.create({
+      key: 'right',
+      frames: this.anims.generateFrameNumbers('human', { start: 3, end: 5 }),
+      ...frameRate
+    });
+    this.anims.create({
+      key: 'down',
+      frames: this.anims.generateFrameNumbers('human', { start: 6, end: 8 }),
+      ...frameRate
+    });
+    this.anims.create({
+      key: 'left',
+      frames: this.anims.generateFrameNumbers('human', { start: 9, end: 11 }),
+      ...frameRate
+    });
+    this.player = this.physics.add.sprite(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 'human');
+    this.player.setOrigin(0.5, 0.6);
     this.player.setCollideWorldBounds(true);
+
+    this.camera.startFollow(this.player, true);
+    this.player.depth = 1; // appear on top of the tileset
+
+    // tilesets
 
     const map = this.make.tilemap({ key: "tilemap" });
     const tilesetImage = map.addTilesetImage(
@@ -62,9 +97,6 @@ export class TopDown extends Scene {
     map.createLayer("rubble", tilesetImage);
     this.eventsLayer = map.getObjectLayer("events")!;
 
-    this.camera.startFollow(this.player, true);
-    // this.camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-
     const tilesetImage2 = map.addTilesetImage("walls", "wall-tiles")!;
     this.collisionLayer = map.createLayer("walls", tilesetImage2)!;
     this.collisionLayer.setCollisionByProperty({ collide: true });
@@ -76,7 +108,6 @@ export class TopDown extends Scene {
     //   faceColor: new Phaser.Display.Color(40, 39, 37, 255),
     // });
 
-    this.player.depth = 1; // appear on top of the tileset
 
     // TODO? const score = this.registry.get('highscore');
     this.cursors = this.input.keyboard!.createCursorKeys();
@@ -106,13 +137,13 @@ export class TopDown extends Scene {
     if (isMoving) return; // Prevent new input while moving
 
     if (left.isDown) {
-      this.attemptMove(-1, 0);
+      this.attemptMove(-1, 0, 'left');
     } else if (right.isDown) {
-      this.attemptMove(1, 0);
+      this.attemptMove(1, 0, 'right');
     } else if (up.isDown) {
-      this.attemptMove(0, -1);
+      this.attemptMove(0, -1, 'up');
     } else if (down.isDown) {
-      this.attemptMove(0, 1);
+      this.attemptMove(0, 1, 'down');
     }
 
     // TODO: Check if space bar is pressed while facing a specific tile
@@ -143,26 +174,27 @@ export class TopDown extends Scene {
     return destination?.id;
   }
 
-  attemptMove(dx: number, dy: number): void {
+  attemptMove(dx: number, dy: number, direction: MoveDirection): void {
     const targetX = this.player.x + dx * TILE_SIZE;
     const targetY = this.player.y + dy * TILE_SIZE;
 
-    // Calculate the target tile
     const targetTile = this.collisionLayer.getTileAtWorldXY(targetX, targetY);
     const targetTile2 = this.objectLayer.getTileAtWorldXY(targetX, targetY);
 
-    // Check for collision
     if (targetTile?.properties.collide || targetTile2?.properties.collide) {
+      this.player.play(`${direction}-idle`);
       return; // Block movement if the tile collides
     }
 
-    // Move player if no collision
-    this.movePlayer(targetX, targetY);
+    this.movePlayer(targetX, targetY, direction);
   }
 
-  movePlayer(targetX: number, targetY: number): void {
+  movePlayer(targetX: number, targetY: number, direction: MoveDirection): void {
     isMoving = true;
-    this.sound.play("sfx-walk", { volume: 0.2 });
+    // this.sound.play("sfx-walk", { volume: 0.2 });
+    this.player.play(direction, true).once('animationcomplete', () => {
+      this.player.play(`${direction}-idle`);
+    })
 
     this.tweens.add({
       targets: this.player,
@@ -171,6 +203,7 @@ export class TopDown extends Scene {
       duration: 150, // Adjust for speed
       onComplete: () => {
         isMoving = false; // Allow movement again
+
         // FIXME: this is happening twice for some reason
         this.checkTileEvent(targetX, targetY);
       },
