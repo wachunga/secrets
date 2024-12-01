@@ -1,12 +1,6 @@
 import Phaser from "phaser";
-import {
-  colored,
-  highlight,
-  locations,
-  strong,
-  weak,
-  type LocationKey,
-} from "../text/data";
+import { locations, type LocationKey } from "../text/data";
+import { colored, highlight, strong, weak } from "../text/colors";
 
 const margin = 100;
 const monospace = "20px monospace";

@@ -1,11 +1,20 @@
 import { Scene } from "phaser";
-import { locations, type LocationKey } from "../text/data";
+import { locations } from "../text/data";
+import { dialogues } from "../text/dialogue";
 
 let isMoving = false;
+let displayQueuePaused = false;
 
 const TILE_SIZE = 16;
 
-type MoveDirection = 'up' | 'down' | 'left' | 'right'
+type MoveDirection = "up" | "down" | "left" | "right";
+
+const switches = {
+  secret1Found: false,
+  chestOpened: false,
+};
+
+const displayQueue: Function[] = [];
 
 export class TopDown extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -27,52 +36,56 @@ export class TopDown extends Scene {
     this.camera.setBackgroundColor(0x222222); // match tileset darkness
     this.camera.setZoom(3);
 
-    const x = data.coordinates?.x || 240;
-    const y = data.coordinates?.y || 288;
+    const x = data.coordinates?.x || Math.floor(3 * 16);
+    const y = data.coordinates?.y || Math.floor(17 * 16);
 
     this.anims.create({
-      key: 'up-idle',
-      frames: this.anims.generateFrameNumbers('human', { frames: [1] }),
+      key: "up-idle",
+      frames: this.anims.generateFrameNumbers("human", { frames: [1] }),
     });
     this.anims.create({
-      key: 'right-idle',
-      frames: this.anims.generateFrameNumbers('human', { frames: [4] }),
+      key: "right-idle",
+      frames: this.anims.generateFrameNumbers("human", { frames: [4] }),
     });
     this.anims.create({
-      key: 'down-idle',
-      frames: this.anims.generateFrameNumbers('human', { frames: [7] }),
+      key: "down-idle",
+      frames: this.anims.generateFrameNumbers("human", { frames: [7] }),
     });
     this.anims.create({
-      key: 'left-idle',
-      frames: this.anims.generateFrameNumbers('human', { frames: [10] }),
+      key: "left-idle",
+      frames: this.anims.generateFrameNumbers("human", { frames: [10] }),
     });
 
     const frameRate = {
       frameRate: 8,
       // repeat: -1,
-      repeatDelay: 0
-    }
+      repeatDelay: 0,
+    };
     this.anims.create({
-      key: 'up',
-      frames: this.anims.generateFrameNumbers('human', { start: 0, end: 2 }),
+      key: "up",
+      frames: this.anims.generateFrameNumbers("human", { start: 0, end: 2 }),
       ...frameRate,
     });
     this.anims.create({
-      key: 'right',
-      frames: this.anims.generateFrameNumbers('human', { start: 3, end: 5 }),
-      ...frameRate
+      key: "right",
+      frames: this.anims.generateFrameNumbers("human", { start: 3, end: 5 }),
+      ...frameRate,
     });
     this.anims.create({
-      key: 'down',
-      frames: this.anims.generateFrameNumbers('human', { start: 6, end: 8 }),
-      ...frameRate
+      key: "down",
+      frames: this.anims.generateFrameNumbers("human", { start: 6, end: 8 }),
+      ...frameRate,
     });
     this.anims.create({
-      key: 'left',
-      frames: this.anims.generateFrameNumbers('human', { start: 9, end: 11 }),
-      ...frameRate
+      key: "left",
+      frames: this.anims.generateFrameNumbers("human", { start: 9, end: 11 }),
+      ...frameRate,
     });
-    this.player = this.physics.add.sprite(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 'human');
+    this.player = this.physics.add.sprite(
+      x + TILE_SIZE / 2,
+      y + TILE_SIZE / 2,
+      "human"
+    );
     this.player.setOrigin(0.5, 0.6);
     this.player.setCollideWorldBounds(true);
 
@@ -108,7 +121,6 @@ export class TopDown extends Scene {
     //   faceColor: new Phaser.Display.Color(40, 39, 37, 255),
     // });
 
-
     // TODO? const score = this.registry.get('highscore');
     this.cursors = this.input.keyboard!.createCursorKeys();
 
@@ -120,6 +132,11 @@ export class TopDown extends Scene {
   }
 
   update(time: number, delta: number): void {
+    if (!displayQueuePaused && displayQueue.length) {
+      const next = displayQueue.shift()!;
+      next();
+    }
+
     const { left, right, up, down, space } = this.cursors;
 
     // draw spotlight on player
@@ -137,19 +154,19 @@ export class TopDown extends Scene {
     if (isMoving) return; // Prevent new input while moving
 
     if (left.isDown) {
-      this.attemptMove(-1, 0, 'left');
+      this.attemptMove(-1, 0, "left");
     } else if (right.isDown) {
-      this.attemptMove(1, 0, 'right');
+      this.attemptMove(1, 0, "right");
     } else if (up.isDown) {
-      this.attemptMove(0, -1, 'up');
+      this.attemptMove(0, -1, "up");
     } else if (down.isDown) {
-      this.attemptMove(0, 1, 'down');
+      this.attemptMove(0, 1, "down");
     }
 
     // TODO: Check if space bar is pressed while facing a specific tile
-    // if (Phaser.Input.Keyboard.JustDown(space)) {
-    //   this.checkSpaceEvent();
-    // }
+    if (Phaser.Input.Keyboard.JustDown(space)) {
+      this.checkSpaceEvent();
+    }
     if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey("T"))) {
       const destination = this.findTransformDestination();
       if (destination) {
@@ -191,9 +208,9 @@ export class TopDown extends Scene {
   movePlayer(targetX: number, targetY: number, direction: MoveDirection): void {
     isMoving = true;
     // this.sound.play("sfx-walk", { volume: 0.2 });
-    this.player.play(direction, true).once('animationcomplete', () => {
+    this.player.play(direction, true).once("animationcomplete", () => {
       this.player.play(`${direction}-idle`);
-    })
+    });
 
     this.tweens.add({
       targets: this.player,
@@ -204,75 +221,69 @@ export class TopDown extends Scene {
         isMoving = false; // Allow movement again
 
         // FIXME: this is happening twice for some reason
-        this.checkTileEvent(targetX, targetY);
+        this.checkTileEvent();
       },
     });
   }
 
-  checkTileEvent(targetX: number, targetY: number): void {
-
-
+  checkSpaceEvent(): void {
     const tileX = Math.floor(this.player.x / 16);
     const tileY = Math.floor(this.player.y / 16);
 
-    console.log(tileX, tileY)
-    if (tileX === 15 && tileY === 13) {
-
-      // show
-
-    }
-
-
-
-    // const tile = this.eventsLayer.
-    // // getTileAtWorldXY(targetX, targetY);
-    // if (tile && tile.properties.trigger) {
-    //   console.log("Triggered event at tile:", tile);
-    //   // Trigger custom event here
-    //   this.triggerTileEvent(tile);
-    // }
-
-    // Iterate over the objects in the object layer
-    this.eventsLayer.objects.forEach(
-      (object: Phaser.Types.Tilemaps.TiledObject) => {
-        const objectBounds = new Phaser.Geom.Rectangle(
-          object.x,
-          object.y,
-          object.width || TILE_SIZE,
-          object.height || TILE_SIZE
+    const openChest = () => {
+      if (switches.chestOpened) {
+        displayQueue.push(() => this.showDialogueBox(["The chest is empty."]));
+      } else {
+        displayQueue.push(() => this.showDialogueBox(dialogues.chestScroll));
+        displayQueue.push(() =>
+          this.showDialogueBox(dialogues.chestPoem, "scroll")
         );
-        const hasTrigger = object.properties?.find(
-          (p: any) => p.name === "trigger"
-        );
-        if (!hasTrigger) return;
-        // if (shouldTrigger) {
-        //   console.log(
-        //     "Checking object",
-        //     object.name,
-        //     this.player.x,
-        //     this.player.y,
-        //     objectBounds
-        //   );
-        // }
-
-        // Check if the player is within the bounds of the object
-        console.log(targetX, targetY, object.x, object.y);
-        if (objectBounds.contains(targetX, targetY)) {
-          console.log("Triggered event at object:", object);
-          this.triggerObjectEvent(object);
-        }
+        displayQueue.push(() => this.showDialogueBox(dialogues.chestScroll2));
       }
-    );
+      switches.chestOpened = true;
+    };
+
+    const playerDirection = this.player.anims.currentAnim?.key;
+    if (tileX === 3 && tileY === 17 && playerDirection?.startsWith("right")) {
+      openChest();
+    }
+    if (tileX === 4 && tileY === 16 && playerDirection?.startsWith("down")) {
+      openChest();
+    }
   }
 
-  // Example of triggering event when walking on a specific object
-  triggerObjectEvent(object: Phaser.Types.Tilemaps.TiledObject): void {
-    console.log("You triggered an event at the object!", object);
-    // Add event logic here
+  checkTileEvent(): void {
+    const tileX = Math.floor(this.player.x / 16);
+    const tileY = Math.floor(this.player.y / 16);
+
+    console.log(tileX, tileY);
+    if (tileX === 15 && tileY === 13) {
+      if (!switches.secret1Found) {
+        displayQueue.push(() => this.showDialogueBox(dialogues.secret1));
+        displayQueue.push(() => this.showDialogueBox(dialogues.secret1b));
+        displayQueue.push(() => this.showDialogueBox(dialogues.secret1c));
+      }
+      switches.secret1Found = true;
+    } else if (tileX === 11 && tileY === 1) {
+      displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting));
+      displayQueue.push(() => this.showDialogueBox(dialogues.spikePainting2));
+    }
   }
 
-  triggerTileEvent(tile: Phaser.Tilemaps.Tile): void {
-    console.log("You walked on a special tile!", tile);
-    // Add event logic here
+  addToDisplayQueue(item: () => {}): void {
+    displayQueue.push(item);
+  }
+
+  showDialogueBox(text: string[], className?: string): void {
+    displayQueuePaused = true;
+
+    // launch scene in parallel to this one
+    this.scene.pause();
+    this.scene.launch("Dialogue", { text, className });
+    this.scene.get("Dialogue").events.once("shutdown", () => {
+      // console.log("shutdown");
+      this.scene.resume();
+      displayQueuePaused = false;
+    });
   }
 }

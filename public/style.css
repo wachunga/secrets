@@ -15,7 +15,13 @@ body {
 }
 
 
-.story-text {
+.dialogue {
+    text-align: center;
+}
+
+.dialogue, .story-text {
+    position: relative;
+    display: flex;
     font-family: monospace;
     /* border: 1px solid white; */
     font-size: 20px;
@@ -25,11 +31,18 @@ body {
     line-height: 1.4;
 }
 
-.story-text p {
+.dialogue p, .story-text p {
     margin: 0;
     padding: 0;
 }
 
-.story-text p+p {
+.dialogue p, .story-text p+p {
     margin-top: 16px;
+}
+
+.scroll {
+    font-size: 24px;
+    color: black;
+    font-family: cursive;
+    line-height: 1.2;
 }

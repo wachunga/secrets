@@ -10,7 +10,7 @@ export class MainMenu extends Scene {
   }
 
   create() {
-    this.logo = this.add.image(this.scale.width / 2, 300, "title-screen")
+    this.logo = this.add.image(this.scale.width / 2, 300, "title-screen");
     this.title = this.add
       .text(this.scale.width / 2, 90, "Cloak and Danger", {
         fontFamily: "monospace",
@@ -21,6 +21,10 @@ export class MainMenu extends Scene {
         align: "center",
       })
       .setOrigin(0.5);
+
+    this.input.keyboard!.once("keydown", () => {
+      this.scene.start("TopDown");
+    });
     this.input.once("pointerdown", () => {
       this.scene.start("TopDown");
     });

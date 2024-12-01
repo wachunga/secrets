@@ -5,6 +5,7 @@ import { GameOver } from "./scenes/GameOver";
 import { MainMenu } from "./scenes/MainMenu";
 import { TextAdventure } from "./scenes/TextAdventure";
 import { InfiniteRunner } from "./scenes/InfiniteRunner";
+import { Dialogue } from "./scenes/Dialogue";
 
 import { Game, Types } from "phaser";
 
@@ -22,13 +23,14 @@ const config: Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   dom: {
-    createContainer: true
+    createContainer: true,
   },
   scene: [
     Boot,
     Preloader,
     MainMenu,
     TopDown,
+    Dialogue,
     TextAdventure,
     GameOver,
     InfiniteRunner,

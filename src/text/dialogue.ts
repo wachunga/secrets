@@ -1,27 +1,41 @@
-const chestPoem = `To survive,
-you may have to hide,
-To breathe,
-you may have to squeeze,
-Adapt to come alive.`;
+import { strong } from "./colors";
 
-export const dialogue = {
+export const dialogues = {
   secret1: [
-    "There's an inscription on the floor.",
-    `A cycle of life,
-a natural balance comes
-to those who seek it.`,
-    "This poem leaves you with knowledge of true harmony.",
-    "Could this be part of the secret of magic? You knew these ruins were a good place to look!",
+    "There's an inscription on the floor:",
+    `<center>The cycle of life<br>
+a natural balance comes<br>
+to those who seek it</center>`,
+    `You gain the knowledge of ${strong("Harmony")}!`,
   ],
-  chest: [
+  secret1b: [
+    "Could this be part of the secret of magic?",
+    "You knew these ruins were a good place to look!",
+  ],
+  secret1c: [
+    `Hint: Press ${strong(
+      "T"
+    )} at any time to transform<br>into an animal form.`,
+  ],
+  chestScroll: [
     "Inside the chest is a weathered scroll.",
     /* show scroll picture with poem above */
-    "The message on the scroll is showing how creatures must adapt.",
+    // "The message on the scroll is showing how creatures must adapt.",
   ],
-  spikePainting: [
-    "Something is painted here.",
-    /* show painting image */
-    "This image seems to show you the power of animal instincts.",
+  chestPoem: [
+    [
+      `To survive<br>`,
+      `you may have to hide<br>`,
+      `To breathe<br>`,
+      `you may have to squeeze<br><br>`,
+      `Adapt to come alive`,
+    ].join(""),
+  ],
+  chestScroll2: [`You learn the secret of ${strong("Adaptation")}!`],
+  spikePainting: ["Something is painted here..."],
+  spikePainting2: [
+    // "This image seems to show you the power of animal instincts.",
+    `You learn the secret of ${strong("animal instincts")}!`,
   ],
   rubbleMelody: [
     "Suddenly a song fills the air.",
