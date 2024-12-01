@@ -1,5 +1,12 @@
 import Phaser from "phaser";
-import { colored, highlight, locations, strong, weak, type LocationKey } from "../text/data";
+import {
+  colored,
+  highlight,
+  locations,
+  strong,
+  weak,
+  type LocationKey,
+} from "../text/data";
 
 const margin = 100;
 const monospace = "20px monospace";
@@ -23,7 +30,7 @@ export class TextAdventure extends Phaser.Scene {
     super({ key: "TextAdventure" });
   }
 
-  preload() { }
+  preload() {}
 
   update() {
     if (this.pressEnterKey) {
@@ -31,37 +38,51 @@ export class TextAdventure extends Phaser.Scene {
       return;
     }
 
-    this.cursor?.setX(this.inputText.getBottomRight().x - 4)
+    this.cursor?.setX(this.inputText.getBottomRight().x - 4);
   }
 
-  create(data: any) {
+  create(data: { destination: LocationKey }) {
     this.background = this.add
       .graphics()
       .fillStyle(0x000000, 1)
       .fillRect(0, 0, this.scale.width, this.scale.height)
-      .lineStyle(4, 0xFFFFFF, 1) // add a stroke around the rectangle
+      .lineStyle(4, 0xffffff, 1) // add a stroke around the rectangle
       .strokeRect(0, 0, this.scale.width, this.scale.height);
 
     this.storyText = this.add.dom(margin, margin, "div").setOrigin(0, 0);
 
-    this.prompt = this.add.text(
-      margin,
-      this.scale.height - margin - 50,
-      "— Press Enter to continue —",
+    this.prompt = this.add
+      .text(
+        margin,
+        this.scale.height - margin - 50,
+        "— Press Enter to continue —",
+        {
+          font: monospace,
+          color: "#ffffff",
+        }
+      )
+      .setVisible(false);
+
+    this.inputTextArrow = this.add
+      .text(
+        this.prompt.getBottomLeft().x,
+        this.prompt.getBottomRight().y,
+        ">",
+        {
+          font: monospace,
+          color: "#ffffff",
+        }
+      )
+      .setVisible(false);
+    this.inputText = this.add.text(
+      this.inputTextArrow.getTopRight().x + 6,
+      this.inputTextArrow.getTopRight().y,
+      "",
       {
         font: monospace,
         color: "#ffffff",
       }
-    ).setVisible(false);
-
-    this.inputTextArrow = this.add.text(this.prompt.getBottomLeft().x, this.prompt.getBottomRight().y, ">", {
-      font: monospace,
-      color: "#ffffff",
-    }).setVisible(false)
-    this.inputText = this.add.text(this.inputTextArrow.getTopRight().x + 6, this.inputTextArrow.getTopRight().y, "", {
-      font: monospace,
-      color: "#ffffff",
-    })
+    );
 
     this.history = [];
     this.historyText = this.add.text(margin, 300, "", {
@@ -71,24 +92,29 @@ export class TextAdventure extends Phaser.Scene {
       lineSpacing: 4,
     });
 
-    this.cursor = this.add.text(
-      this.inputTextArrow.getTopRight().x + 2,
-      this.inputTextArrow.getTopRight().y - 2,
-      "|",
-      {
-        font: monospace,
-        color: "#ffffff",
-      }
-    ).setVisible(false);
+    this.cursor = this.add
+      .text(
+        this.inputTextArrow.getTopRight().x + 2,
+        this.inputTextArrow.getTopRight().y - 2,
+        "|",
+        {
+          font: monospace,
+          color: "#ffffff",
+        }
+      )
+      .setVisible(false);
 
     if (!this.introSeen) {
       this.pressEnterKey = true;
       this.updateTextDisplays();
       this.updateStoryText(
-        `<p>As you transform into a ${highlight('rat')}, your sight ${weak('weakens')} but your smell and hearing are ${strong('enhanced')}.</p>`
+        `<p>As you transform into a ${highlight("rat")}, your sight ${weak(
+          "weakens"
+        )} but your smell and hearing are ${strong("enhanced")}.</p>`
       );
       this.introSeen = true;
     } else {
+      this.currentScene = data.destination || "1-entrace";
       this.updateTextDisplays();
     }
 
@@ -96,17 +122,17 @@ export class TextAdventure extends Phaser.Scene {
 
     this.input.keyboard!.on("keydown", (event: KeyboardEvent) => {
       if (this.pressEnterKey) {
-        if (event.key === 'Enter') {
+        if (event.key === "Enter") {
           this.pressEnterKey = false;
           let nextLocation = this.getLocation(this.currentScene).pressEnterKey;
-          if (!nextLocation || nextLocation === 'auto') {
-            nextLocation = "1-entrance"; // TODO: from data
+          if (!nextLocation || nextLocation === "auto") {
+            nextLocation = data.destination || "1-entrance";
           }
           this.currentScene = nextLocation;
           this.updateTextDisplays();
         }
       } else {
-        this.handleKeyInput(event)
+        this.handleKeyInput(event);
       }
     });
   }
@@ -114,14 +140,16 @@ export class TextAdventure extends Phaser.Scene {
   private updateStoryText(text: string) {
     let html = text;
     if (this.currentScene !== "start") {
-      const connections = this.getLocation(this.currentScene).connections || {}
-      const directions = Object.keys(connections).map((dir) => colored(dir.toUpperCase(), "primary")).join(", ")
+      const connections = this.getLocation(this.currentScene).connections || {};
+      const directions = Object.keys(connections)
+        .map((dir) => colored(dir.toUpperCase(), "primary"))
+        .join(", ");
       if (directions.length) {
-        html += `<br><br>You can go: ${directions}`
+        html += `<br><br>You can go: ${directions}`;
       }
     }
 
-    this.storyText.createFromHTML(html).setClassName("story-text")
+    this.storyText.createFromHTML(html).setClassName("story-text");
   }
 
   private startCursor() {
@@ -141,9 +169,9 @@ export class TextAdventure extends Phaser.Scene {
   }
 
   private normalizeInput(input: string) {
-    const split = input.toUpperCase().trim().split(' ');
+    const split = input.toUpperCase().trim().split(" ");
     const command = split[0];
-    const subject = split.slice(1).join(' ');
+    const subject = split.slice(1).join(" ");
     switch (command) {
       case "":
       case "H":
@@ -158,6 +186,8 @@ export class TextAdventure extends Phaser.Scene {
       case "TRANSFORM":
       case "HUMAN":
       case "REVERT":
+      case "EXIT":
+      case "T":
         return "TRANSFORM";
       case "N":
       case "NORTH":
@@ -192,12 +222,18 @@ export class TextAdventure extends Phaser.Scene {
   private processInput(originalInput: string) {
     const input = this.normalizeInput(originalInput);
     if (input === "HELP") {
-      this.updateHistory('HELP', "Type a command to interact with the world.\nFor example, 'NORTH', 'LOOK', or 'TRANSFORM'.");
+      this.updateHistory(
+        "HELP",
+        "Type a command to interact with the world.\nFor example, 'NORTH', 'LOOK', or 'TRANSFORM'."
+      );
       return;
     }
 
     const currentSceneData = this.getLocation(this.currentScene);
-    const connections = { ...currentSceneData.connections, ...currentSceneData.hiddenConnections };
+    const connections = {
+      ...currentSceneData.connections,
+      ...currentSceneData.hiddenConnections,
+    };
     const commands = currentSceneData.commands || {};
     const commandKey = input.toLowerCase();
     if (commandKey in connections) {
@@ -206,23 +242,38 @@ export class TextAdventure extends Phaser.Scene {
       this.currentScene = nextSceneId;
       this.history = [];
 
-      // Play scene effects
+      // TODO: Play scene effects
       if (nextLocation.effects) {
-        // FIXME
-        console.log("effecting!", nextLocation.effects);
+        // console.log("effecting!", nextLocation.effects);
         nextLocation.effects.call(this);
       }
 
       this.updateTextDisplays();
     } else if (commandKey in commands) {
       this.updateHistory(originalInput, commands[commandKey]);
-    } else if (commandKey === 'transform') {
-      this.sound.play("sfx-transform", { seek: 0.3 });
-      this.scene.start("TopDown", { coordinates: currentSceneData.coordinates });
-    } else if (commandKey === 'look') {
+    } else if (commandKey === "transform") {
+      const location = this.getLocation(this.currentScene);
+      if (location.destinationTile) {
+        this.sound.play("sfx-transform", { seek: 0.3 });
+        const coordinates = {
+          x: location.destinationTile.x * 16,
+          y: location.destinationTile.y * 16,
+        };
+        console.log("loc", location.destinationTile, coordinates);
+        this.scene.start("TopDown", { coordinates });
+      } else {
+        this.updateHistory(
+          originalInput,
+          "This doesn't seem like a good time to be human."
+        );
+      }
+    } else if (commandKey === "look") {
       this.updateHistory(originalInput, "You don't see anything remarkable.");
     } else {
-      this.updateHistory(originalInput, "You hesitate, unsure of what to do. Try something else.");
+      this.updateHistory(
+        originalInput,
+        "You hesitate, unsure of what to do. Try something else."
+      );
     }
   }
 
@@ -238,17 +289,17 @@ export class TextAdventure extends Phaser.Scene {
   }
 
   private updateTextDisplays() {
-    const scene = this.getLocation(this.currentScene);
-    this.updateStoryText(`${scene.description}\n\n`);
+    const location = this.getLocation(this.currentScene);
+    this.updateStoryText(`${location.description}\n\n`);
     this.historyText.setText(this.history.join("\n"));
 
-    if (scene.pressEnterKey) {
+    if (location.pressEnterKey) {
       this.pressEnterKey = true;
       this.prompt.setVisible(true);
-      this.inputTextArrow.setVisible(false)
+      this.inputTextArrow.setVisible(false);
     } else {
       this.prompt.setVisible(false);
-      this.inputTextArrow.setVisible(true)
+      this.inputTextArrow.setVisible(true);
     }
   }
 

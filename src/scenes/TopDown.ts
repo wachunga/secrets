@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import { locations, type LocationKey } from "../text/data";
 
 let isMoving = false;
 
@@ -118,10 +119,28 @@ export class TopDown extends Scene {
     // if (Phaser.Input.Keyboard.JustDown(space)) {
     //   this.checkSpaceEvent();
     // }
-    if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey("SPACE"))) {
-      this.sound.play("sfx-transform", { seek: 0.3 });
-      this.scene.start("TextAdventure");
+    if (Phaser.Input.Keyboard.JustDown(this.input.keyboard!.addKey("T"))) {
+      const destination = this.findTransformDestination();
+      if (destination) {
+        this.sound.play("sfx-transform", { seek: 0.3 });
+        this.scene.start("TextAdventure", { destination });
+      } else {
+        // TODO: show message that you can't transform here
+      }
     }
+  }
+
+  findTransformDestination() {
+    const x = Math.floor(this.player.x / 16);
+    const y = Math.floor(this.player.y / 16);
+    const destination = locations.find((location) => {
+      return (
+        location.originTiles?.x.includes(x) &&
+        location.originTiles.y.includes(y)
+      );
+    });
+    console.log("found", x, y, destination?.id);
+    return destination?.id;
   }
 
   attemptMove(dx: number, dy: number): void {
