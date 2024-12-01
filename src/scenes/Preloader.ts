@@ -18,11 +18,9 @@ export class Preloader extends Scene {
   }
 
   preload() {
-    //  Load the assets for the game - Replace with your own assets
     this.load.setPath("assets");
 
-    // this.load.image("logo", "logo.png");
-    this.load.image("title-screen", "title-screen.jpeg");
+    this.load.image("title-screen", "title-screen2.jpeg");
     this.load.image("mask", "mask1.png");
 
     // human form
@@ -65,7 +63,7 @@ export class Preloader extends Scene {
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.sound.play("bg-main", { loop: true, volume: 0.2 });
-    this.scene.start("TopDown");
+    this.scene.start("MainMenu");
     //   this.scene.transition({
     //     target: "InfiniteRunner",
     //     duration: 1000,

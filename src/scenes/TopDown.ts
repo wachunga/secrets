@@ -25,7 +25,7 @@ export class TopDown extends Scene {
   create(data: any): void {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0x222222); // match tileset darkness
-    this.camera.setZoom(2);
+    this.camera.setZoom(3);
 
     const x = data.coordinates?.x || 240;
     const y = data.coordinates?.y || 288;
@@ -170,7 +170,6 @@ export class TopDown extends Scene {
         location.originTiles.y.includes(y)
       );
     });
-    console.log("found", x, y, destination?.id);
     return destination?.id;
   }
 
@@ -211,6 +210,20 @@ export class TopDown extends Scene {
   }
 
   checkTileEvent(targetX: number, targetY: number): void {
+
+
+    const tileX = Math.floor(this.player.x / 16);
+    const tileY = Math.floor(this.player.y / 16);
+
+    console.log(tileX, tileY)
+    if (tileX === 15 && tileY === 13) {
+
+      // show
+
+    }
+
+
+
     // const tile = this.eventsLayer.
     // // getTileAtWorldXY(targetX, targetY);
     // if (tile && tile.properties.trigger) {
