@@ -84,13 +84,6 @@ export class TextAdventure extends Phaser.Scene {
       .setOrigin(0, 0)
       .setClassName("history-text");
 
-    // this.historyText = this.add.text(margin, 300, "", {
-    //   font: "18px monospace",
-    //   color: "#aaaaaa",
-    //   wordWrap: { width: 700 },
-    //   lineSpacing: 4,
-    // });
-
     this.cursor = this.add
       .text(
         this.inputTextArrow.getTopRight().x + 2,
@@ -237,15 +230,13 @@ export class TextAdventure extends Phaser.Scene {
     const commandKey = input.toLowerCase();
     if (commandKey in connections) {
       const nextSceneId = connections[commandKey];
-      const nextLocation = this.getLocation(nextSceneId);
       this.currentScene = nextSceneId;
       this.history = [];
 
       // TODO: Play scene effects
-      if (nextLocation.effects) {
-        // console.log("effecting!", nextLocation.effects);
-        nextLocation.effects.call(this);
-      }
+      // if (nextLocation.effects) {
+      //   nextLocation.effects.call(this);
+      // }
 
       this.updateTextDisplays();
     } else if (commandKey in commands) {
@@ -258,7 +249,7 @@ export class TextAdventure extends Phaser.Scene {
           x: location.destinationTile.x * 16,
           y: location.destinationTile.y * 16,
         };
-        console.log("loc", location.destinationTile, coordinates);
+        // console.log("loc", location.destinationTile, coordinates);
         this.scene.start("TopDown", { coordinates });
       } else {
         this.updateHistory(

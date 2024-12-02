@@ -1,4 +1,4 @@
-import { highlight, strong } from "./colors";
+import { strong } from "./colors";
 
 export type Location = {
   id: LocationKey;
@@ -6,7 +6,6 @@ export type Location = {
   connections?: { [key: string]: LocationKey }; // directions you can go from this location
   hiddenConnections?: { [key: string]: LocationKey }; // same as above but not obvious in the UI
   commands?: { [key: string]: string }; // extra commands you can type (other than directions)
-  effects?: () => void;
   pressEnterKey?: LocationKey;
   originTiles?: { x: number[]; y: number[] };
   destinationTile?: { x: number; y: number };
@@ -81,12 +80,12 @@ The smells of the jungle waft down from a hole in the ceiling where you entered 
     destinationTile: { x: 18, y: 1 },
     description:
       // "The path is blocked by a pile of rubble. You can see a faint light to the north.",
-      "This room appears empty except for a skull in the corner.",
+      `This room appears empty except for a ${strong("skull")} in the corner.`,
     connections: { south: "1-hallway" },
-    // commands: {
-    //   look: "Your instincts tell you there's no way you'll be able to get over or through this rubble in your current form.",
-    //   jump: "The rubble goes all the way to the ceiling.",
-    // },
+    commands: {
+      "look skull": "You'd rather not think about it.",
+      get: "You really don't want to touch it.",
+    },
   },
   {
     id: "1-west-hallway",
@@ -157,9 +156,14 @@ You cautiously scurry forward and find enormous ${strong(
       y: [8],
     },
     destinationTile: { x: 11, y: 8 },
-    description: `You have a good feeling as the tunnel curves, but then you nearly run into a wall. The path is blocked.
-Or is it? Your whiskers twitch as you detect a small gap in the base of the wall.`,
+    description: `You have a good feeling as the tunnel curves, but then you nearly run into a wall. The path is blocked.<br><br>
+Or is it? Your whiskers twitch as you detect a small ${strong(
+      "gap"
+    )} in the base of the wall.`,
     connections: { gap: "1-secret-tunnel", north: "1-west-hallway" },
+    commands: {
+      "look gap": "It looks big enough to enter, if you dare.",
+    },
   },
   {
     id: "1-secret-tunnel",
@@ -174,7 +178,9 @@ Or is it? Your whiskers twitch as you detect a small gap in the base of the wall
       y: [16, 17],
     },
     destinationTile: { x: 3, y: 16 },
-    description: `The air here is stale, and you sense that few people have ever visited this place. At the center of the room is a large wooden object.`,
+    description: `The air here is stale, and you sense that few people have ever visited this place. At the center of the room is a large ${strong(
+      "wooden object"
+    )}.`,
     connections: { tunnel: "1-west-hallway" },
     commands: {
       look: "You see a large wooden object. Smells like oak. Your limited eyesight makes it tough to see the details.",
@@ -190,5 +196,4 @@ Or is it? Your whiskers twitch as you detect a small gap in the base of the wall
   // effects: () => this.pulseBackground("#3366cc", 500),
   // effects: () => this.fadeBackground("#ffcc00", 2000),
   // effects: () => this.flashScreen("#555555", 1000),
-  // },
 ];

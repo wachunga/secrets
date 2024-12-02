@@ -29,7 +29,6 @@ export class TopDown extends Scene {
   cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   rt: Phaser.GameObjects.RenderTexture;
-  eventsLayer: Phaser.Tilemaps.ObjectLayer;
   collisionLayer: Phaser.Tilemaps.TilemapLayer;
   objectLayer: Phaser.Tilemaps.TilemapLayer;
 
@@ -102,23 +101,17 @@ export class TopDown extends Scene {
     // tilesets
 
     const map = this.make.tilemap({ key: "tilemap" });
-    const tilesetImage = map.addTilesetImage(
-      "floor",
-      "floor-tiles",
-      16,
-      16
-      // 1,
-      // 2
-    )!;
-    map.createLayer("floor", tilesetImage);
-    this.objectLayer = map
-      .createLayer("objects", tilesetImage)
-      ?.setCollisionByProperty({ collide: true })!;
-    map.createLayer("rubble", tilesetImage);
-    this.eventsLayer = map.getObjectLayer("events")!;
+    const floorTiles = map.addTilesetImage("floor", "floor-tiles")!;
+    map.createLayer("floor", floorTiles);
 
-    const tilesetImage2 = map.addTilesetImage("walls", "wall-tiles")!;
-    this.collisionLayer = map.createLayer("walls", tilesetImage2)!;
+    this.objectLayer = map
+      .createLayer("objects", floorTiles)
+      ?.setCollisionByProperty({ collide: true })!;
+
+    map.createLayer("rubble", floorTiles);
+
+    const wallTiles = map.addTilesetImage("walls", "wall-tiles")!;
+    this.collisionLayer = map.createLayer("walls", wallTiles)!;
     this.collisionLayer.setCollisionByProperty({ collide: true });
 
     // const debugGraphics = this.add.graphics().setAlpha(0.3);
@@ -135,6 +128,11 @@ export class TopDown extends Scene {
     //  Make sure it doesn't scroll with the camera
     this.rt.setOrigin(0, 0);
     this.rt.setScrollFactor(0, 0);
+
+    if (switches.rubbleCleared) {
+      // reset the tilemap back to modified state
+      this.removeRubble();
+    }
   }
 
   update(time: number, delta: number): void {
@@ -188,30 +186,37 @@ export class TopDown extends Scene {
     }
 
     // if all secrets have been found, update tileset to remove rubble
-    // console.log("switches", JSON.stringify(switches, null, 2));
     if (
+      !switches.rubbleCleared &&
       switches.secret1Found &&
       switches.chestOpened &&
       switches.paintingSeen &&
-      switches.melodyHeard &&
-      !switches.rubbleCleared
+      switches.melodyHeard
     ) {
-      this.objectLayer.forEachTile((tile) => {
-        if (tile.properties.collide && tile.properties.rubble) {
-          this.time.delayedCall(1000, () => {
-            displayQueue.push(() => {
-              this.showDialogueBox(["You feel a mighty rumble..."]);
-            });
-            displayQueue.push(() => {
-              this.cameras.main.shake(500, 0.01);
-              tile.setCollision(false);
-              tile.setVisible(false);
-            });
-          });
-          switches.rubbleCleared = true;
-        }
+      this.time.delayedCall(1000, () => {
+        displayQueue.push(() => {
+          this.showDialogueBox(["You feel a mighty rumble..."]);
+        });
+        displayQueue.push(() => {
+          this.cameras.main.shake(500, 0.01);
+          this.removeRubble();
+        });
       });
+      switches.rubbleCleared = true;
     }
+  }
+
+  removeRubble(): void {
+    const rubbleTiles: Phaser.Tilemaps.Tile[] = [];
+    this.objectLayer.forEachTile((tile) => {
+      if (tile.properties.collide && tile.properties.rubble) {
+        rubbleTiles.push(tile);
+      }
+    });
+    rubbleTiles.forEach((tile) => {
+      tile.setCollision(false);
+      tile.setVisible(false);
+    });
   }
 
   findTransformDestination() {
@@ -285,6 +290,14 @@ export class TopDown extends Scene {
     }
     if (tileX === 4 && tileY === 16 && playerDirection?.startsWith("down")) {
       openChest();
+    }
+
+    if (tileX === 11 && tileY === 8 && playerDirection?.startsWith("left")) {
+      displayQueue.push(() =>
+        this.showDialogueBox([
+          `You see a hole, but it's dark and way too tiny for a human.`,
+        ])
+      );
     }
 
     if (tileX === 16 && tileY === 14 && playerDirection?.startsWith("right")) {
