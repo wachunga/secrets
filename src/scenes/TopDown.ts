@@ -311,7 +311,8 @@ export class TopDown extends Scene {
     if (tileX === 18 && tileY === 14 && playerDirection?.startsWith("right")) {
       displayQueue.push(() => {
         this.showDialogueBox([`There's no way but down. You jump!`]);
-
+      });
+      displayQueue.push(() => {
         // teleport the player to the bottom floor
         this.player.setPosition(31 * 16 + 8, 3 * 16 + 8);
         this.camera.flash(500);
