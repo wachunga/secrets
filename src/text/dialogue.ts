@@ -4,7 +4,7 @@ export const dialogues = {
   intro: [
     `A cloaked girl, with the unpredictable ability to transform into a rat, has spent all of her life trying to gain control of her power.`,
     `Years of research have led her to where she is now, some jungle ruins on a remote island.`,
-    `The secret of magic awaits,<br>but finding it willl not be easy!`,
+    `The secret of magic awaits,<br>but finding it will not be easy!`,
   ],
   secret1: [
     "There's an inscription on the floor:",

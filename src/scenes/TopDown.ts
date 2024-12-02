@@ -128,7 +128,6 @@ export class TopDown extends Scene {
     //   faceColor: new Phaser.Display.Color(40, 39, 37, 255),
     // });
 
-    // TODO? const score = this.registry.get('highscore');
     this.cursors = this.input.keyboard!.createCursorKeys();
 
     // fog around player
@@ -201,7 +200,7 @@ export class TopDown extends Scene {
         if (tile.properties.collide && tile.properties.rubble) {
           this.time.delayedCall(1000, () => {
             displayQueue.push(() => {
-              this.showDialogueBox(["You feel a might rumble..."]);
+              this.showDialogueBox(["You feel a mighty rumble..."]);
             });
             displayQueue.push(() => {
               this.cameras.main.shake(500, 0.01);
