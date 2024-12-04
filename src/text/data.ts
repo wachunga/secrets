@@ -193,7 +193,4 @@ Or is it? Your whiskers twitch as you detect a small ${strong(
       get: "It's too heavy.",
     },
   },
-  // effects: () => this.pulseBackground("#3366cc", 500),
-  // effects: () => this.fadeBackground("#ffcc00", 2000),
-  // effects: () => this.flashScreen("#555555", 1000),
 ];

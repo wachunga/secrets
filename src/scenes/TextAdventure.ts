@@ -321,48 +321,4 @@ export class TextAdventure extends Phaser.Scene {
       this.inputTextArrow.setVisible(true);
     }
   }
-
-  // Visual Effects (for reference)
-  private flashScreen(color: string = "#999999", duration: number = 200) {
-    const flash = this.add.rectangle(
-      0,
-      0,
-      this.scale.width,
-      this.scale.height,
-      Phaser.Display.Color.HexStringToColor(color).color
-    );
-    flash.setOrigin(0, 0);
-
-    this.tweens.add({
-      targets: flash,
-      alpha: { from: 0, to: 0.2 },
-      duration: duration,
-      ease: "Sine.easeInOut",
-      onComplete: () => flash.destroy(),
-    });
-  }
-
-  private fadeBackground(color: string, duration: number) {
-    this.tweens.add({
-      targets: this.background,
-      fillStyle: {
-        from: 0x000000,
-        to: Phaser.Display.Color.HexStringToColor(color).color,
-      },
-      duration: duration,
-    });
-  }
-
-  private pulseBackground(color: string, duration: number) {
-    this.tweens.add({
-      targets: this.background,
-      fillStyle: {
-        from: Phaser.Display.Color.HexStringToColor(color).color,
-        to: 0x000000,
-      },
-      duration: duration,
-      yoyo: true,
-      repeat: 3,
-    });
-  }
 }
