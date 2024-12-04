@@ -17,6 +17,8 @@ export class TextAdventure extends Phaser.Scene {
   private playerInput: string = "";
   private currentScene: LocationKey = "start";
   private history: string[] = [];
+  private commandHistory: string[] = [];
+  private commandHistoryIndex: number = 0;
   private introSeen = false;
   private pressEnterKey = false;
 
@@ -79,6 +81,8 @@ export class TextAdventure extends Phaser.Scene {
     );
 
     this.history = [];
+    this.commandHistory = [];
+    this.commandHistoryIndex = 0;
     this.historyText = this.add
       .dom(margin, 300, "div")
       .setOrigin(0, 0)
@@ -200,18 +204,47 @@ export class TextAdventure extends Phaser.Scene {
 
   private handleKeyInput(event: KeyboardEvent) {
     if (event.key === "Enter") {
-      this.processInput(this.playerInput);
+      this.handleInputEnter(this.playerInput);
       this.playerInput = "";
+      this.commandHistoryIndex = 0;
     } else if (event.key === "Backspace") {
       this.playerInput = this.playerInput.slice(0, -1);
     } else if (event.key.length === 1) {
       this.playerInput += event.key.toUpperCase();
+    } else if (event.key === "Escape") {
+      this.playerInput = "";
+      this.commandHistoryIndex = 0;
+    } else if (event.key === "ArrowUp") {
+      const prevCommand =
+        this.commandHistory[
+          this.commandHistory.length + (this.commandHistoryIndex - 1)
+        ];
+      if (prevCommand) {
+        this.playerInput = prevCommand;
+        this.commandHistoryIndex -= 1;
+      }
+    } else if (event.key === "ArrowDown") {
+      const nextCommand =
+        this.commandHistory[
+          this.commandHistory.length + (this.commandHistoryIndex + 1)
+        ];
+      if (nextCommand) {
+        this.playerInput = nextCommand;
+        this.commandHistoryIndex += 1;
+      } else if (this.commandHistoryIndex === -1) {
+        this.playerInput = "";
+        this.commandHistoryIndex = 0;
+      }
     }
 
     this.inputText.setText(this.playerInput.toUpperCase());
   }
 
-  private processInput(originalInput: string) {
+  private handleInputEnter(originalInput: string) {
+    if (originalInput.trim()) {
+      this.commandHistory.push(originalInput);
+    }
+
     const input = this.normalizeInput(originalInput);
     if (input === "HELP") {
       this.updateHistory(
@@ -232,12 +265,6 @@ export class TextAdventure extends Phaser.Scene {
       const nextSceneId = connections[commandKey];
       this.currentScene = nextSceneId;
       this.history = [];
-
-      // TODO: Play scene effects
-      // if (nextLocation.effects) {
-      //   nextLocation.effects.call(this);
-      // }
-
       this.updateTextDisplays();
     } else if (commandKey in commands) {
       this.updateHistory(originalInput, commands[commandKey]);
