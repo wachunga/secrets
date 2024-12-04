@@ -371,10 +371,10 @@ export class TopDown extends Scene {
             )}!`,
           ]);
 
-          // restart the game from the main menu
           this.cameras.main.fadeOut(3000, 0, 0, 0);
           this.time.delayedCall(3000, () => {
-            this.scene.start("MainMenu");
+            // quickest way to reset the whole game
+            location.reload();
           });
         });
       }
