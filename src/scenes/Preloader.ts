@@ -56,7 +56,7 @@ export class Preloader extends Scene {
     this.load.audio("bg-main", "audio/lonely-departure.m4a");
     // credit: "Minifantasy_Dungeon_SFX"
     this.load.audio("sfx-transform", "audio/transform.wav");
-    this.load.audio("sfx-walk", "audio/walk.wav");
+    // this.load.audio("sfx-walk", "audio/walk.wav");
   }
 
   create() {
