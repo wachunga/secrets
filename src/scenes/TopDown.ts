@@ -248,20 +248,21 @@ export class TopDown extends Scene {
 
   movePlayer(targetX: number, targetY: number, direction: MoveDirection): void {
     isMoving = true;
-    // this.sound.play("sfx-walk", { volume: 0.2 });
     this.player.play(direction, true).once("animationcomplete", () => {
-      this.player.play(`${direction}-idle`);
+      const current = this.player.anims.currentAnim?.key;
+      if (!current?.includes("idle")) {
+        this.player.play(`${current}-idle`);
+      }
     });
 
     this.tweens.add({
       targets: this.player,
       x: targetX,
       y: targetY,
-      duration: 150, // Adjust for speed
+      duration: 150,
       onComplete: () => {
         isMoving = false; // Allow movement again
 
-        // FIXME: this is happening twice for some reason
         this.checkTileEvent();
       },
     });
