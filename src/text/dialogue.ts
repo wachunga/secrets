@@ -2,9 +2,9 @@ import { strong } from "./colors";
 
 export const dialogues = {
   intro: [
-    `A cloaked girl, with the unpredictable ability to transform into a rat, has spent all of her life trying to gain control of her power.`,
-    `Years of research have led her to where she is now, some jungle ruins on a remote island.`,
-    `The secret of magic awaits,<br>but finding it will not be easy!`,
+    `A cloaked girl with the unpredictable ability to<br>transform into a rat has spent all of her life<br>trying to gain control of her power.`,
+    `Years of research have led her here,<br>jungle ruins on a remote island.`,
+    `<p style="margin-top: 200px">The secret of magic awaits,<br>but finding it will not be easy!`,
   ],
   secret1: [
     "There's an inscription on the floor:",
@@ -22,11 +22,7 @@ to those who seek it</center>`,
       "T"
     )} at any time to transform<br>into an animal form.`,
   ],
-  chestScroll: [
-    "Inside the chest is a weathered scroll.",
-    /* show scroll picture with poem above */
-    // "The message on the scroll is showing how creatures must adapt.",
-  ],
+  chestScroll: ["Inside the chest is a weathered scroll."],
   chestPoem: [
     [
       `To survive<br>`,

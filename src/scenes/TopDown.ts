@@ -43,7 +43,7 @@ export class TopDown extends Scene {
 
     // 240, 288
     const x = data.coordinates?.x || Math.floor(15 * 16);
-    const y = data.coordinates?.y || Math.floor(18 * 16);
+    const y = data.coordinates?.y || Math.floor(17 * 16);
 
     this.anims.create({
       key: "up-idle",
@@ -135,7 +135,7 @@ export class TopDown extends Scene {
     }
   }
 
-  update(time: number, delta: number): void {
+  update(): void {
     if (!displayQueuePaused && displayQueue.length) {
       const next = displayQueue.shift()!;
       next();
